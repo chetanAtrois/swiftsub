@@ -11,6 +11,10 @@ const userSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
+    companyName:{
+      type:String,
+      required:true
+    },
     email: {
       type: String,
       required: false,

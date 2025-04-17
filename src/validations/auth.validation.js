@@ -7,7 +7,8 @@ const register = {
     email: Joi.string().required(),
     password:Joi.string().required(),
     roleType: Joi.string().required().valid('user'),
-    phoneNumber:Joi.string().required()
+    phoneNumber:Joi.string().required(),
+    companyName:Joi.string().required()
 
   }),
 };
@@ -41,7 +42,7 @@ const refreshTokens = {
 
 const forgotPassword = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    identifier: Joi.string().required(),
     userType: Joi.string().required(),
   }),
 };

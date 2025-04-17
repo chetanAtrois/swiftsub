@@ -55,11 +55,7 @@ If you didn't request this, please ignore this email.`;
   await sendEmail(to, subject, text);
 };
 
-/**
- * Send email verification message
- * @param {string} to - Recipient email
- * @param {string} token - Verification token 
- */
+
 const sendVerificationEmail = async (to, token) => {
   const subject = 'Email Verification';
   const verificationEmailUrl = `http://link-to-app/verify-email?token=${token}`;
@@ -74,10 +70,23 @@ If you didn't create an account, please ignore this email.`;
   
   await sendEmail(to, subject, text);
 };
+const verifyOtp = async (otp, email) => {
+  const isOtpValid = await Otp.findOne({
+    $and: [{ otp }, { email }],
+  });
+  if (!isOtpValid) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'please provide correct otp!');
+  }
+  if (new Date().getTime() > new Date(isOtpValid.lastOtpSentTime).getTime() + 10 * 60 * 1000) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Otp Expired!');
+  }
+  await Otp.deleteMany({ email });
+};
 
 module.exports = {
   transport,
   sendEmail,
   sendResetPasswordEmail,
-  sendVerificationEmail
+  sendVerificationEmail,
+  verifyOtp
 };

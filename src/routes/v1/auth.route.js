@@ -9,6 +9,8 @@ const router = express.Router();
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
 router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
-
+router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);
+router.get('/verify-otp', validate(authValidation.verifyOtp), authController.verifyOtp);
+router.put('/change-password/:id', auth(), validate(authValidation.changePassword), authController.changePassword);
 
 module.exports = router;
