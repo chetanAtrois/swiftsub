@@ -42,7 +42,7 @@ const refreshTokens = {
 
 const forgotPassword = {
   body: Joi.object().keys({
-    identifier: Joi.string().required(),
+    email: Joi.string().required(),
     userType: Joi.string().required(),
   }),
 };
