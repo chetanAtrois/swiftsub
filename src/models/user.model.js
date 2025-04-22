@@ -49,9 +49,8 @@ const userSchema = mongoose.Schema(
     },
     method: {
       type: String,
-      enum: ['manual', 'google'],
-      default: 'manual',
-      required: true,
+      enum: ['google'],
+      default: undefined // Won't be stored if not provided
     },
     
     userType: {
