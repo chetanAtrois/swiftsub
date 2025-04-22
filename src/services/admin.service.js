@@ -62,7 +62,24 @@ const createAdmin = async (userBody) => {
     let Data = await Company.paginate({}, options)
     return Data;
   };
-
+  const getAdminByEmail = async (email) => {
+    return Admin.findOne({ email });
+  };
+  const getAdminById = async (id) => {
+    return Admin.findById(id);
+  };
+  const updateAdminById = async (userId, updateBody) => {
+    const user = await getAdminById(userId);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_FOUND);
+    }
+    if (user.email && (await Admin.isEmailTaken(user.email, userId))) {
+      throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
+    }
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
+  };
   
 
   module.exports={
@@ -70,5 +87,8 @@ const createAdmin = async (userBody) => {
     login,
     fetchUserList,
     addCompany,
-    fetchCompanyData
+    fetchCompanyData,
+    getAdminByEmail,
+    getAdminById,
+    updateAdminById
   }

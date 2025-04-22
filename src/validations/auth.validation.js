@@ -57,8 +57,7 @@ const refreshTokens = {
 
 const forgotPassword = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
-    userType: Joi.string().required(),
+    email: Joi.string().required()
   }),
 };
 
@@ -68,7 +67,6 @@ const resetPassword = {
   }),
   body: Joi.object().keys({
     password: Joi.string().required().custom(password),
-    userType: Joi.string().required(),
     confirmNewPassword:Joi.string().required()
   }),
 };
@@ -98,8 +96,7 @@ const changePassword = {
   body: Joi.object().keys({
     currentPassword:Joi.string().required(),
     newPassword:Joi.string().required(),
-    confirmPassword:Joi.string().required(),
-    userType:Joi.string().required()
+    confirmPassword:Joi.string().required()
   }),
 };
 

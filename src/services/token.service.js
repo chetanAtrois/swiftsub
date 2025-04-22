@@ -3,6 +3,7 @@ const moment = require('moment');
 const httpStatus = require('http-status');
 const config = require('../config/config');
 const userService = require('./user.service');
+const adminService = require('./admin.service');
 const { Token } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
@@ -31,14 +32,31 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 };
 
 const verifyToken = async (token, type) => {
-  // console.log('token122', token);
-  const payload = jwt.verify(token, config.jwt.secret);
-  const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
-  if (!tokenDoc) {
-    throw new Error('Token not found');
+  try {
+    const payload = jwt.verify(token, config.jwt.secret);  // Decode the token
+    console.log('Decoded Token:', payload);  // Optional: Debug log
+
+    const tokenDoc = await Token.findOne({
+      token,
+      type,
+      user: payload.sub,
+      blacklisted: false,
+    });
+
+    if (!tokenDoc) {
+      throw new Error('Token not found or it has been blacklisted');
+    }
+
+    // ✅ Attach userType from payload to tokenDoc manually
+    tokenDoc.userType = payload.userType;
+
+    return tokenDoc;
+  } catch (error) {
+    throw new Error('Token verification failed: ' + error.message);
   }
-  return tokenDoc;
 };
+
+
 
 const generateAuthTokens = async (user, userType) => {
   console.log('suyeyee899', user);
@@ -62,12 +80,12 @@ const generateAuthTokens = async (user, userType) => {
 };
 
 const generateResetPasswordToken = async (userBody) => {
-  const user = await checkUserByEmail(userBody.email, userBody.userType);
+  const user = await checkUserByEmail(userBody.email);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
   }
   const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
-  const resetPasswordToken = generateToken(user.id, userBody.userType, expires, tokenTypes.RESET_PASSWORD);
+  const resetPasswordToken = generateToken(user.id, user.userType, expires, tokenTypes.RESET_PASSWORD);
   await saveToken(resetPasswordToken, user.id, expires, tokenTypes.RESET_PASSWORD);
   return resetPasswordToken;
 };
@@ -79,15 +97,24 @@ const generateVerifyEmailToken = async (user) => {
   return verifyEmailToken;
 };
 
-const checkUserByEmail = async (email, role) => {
- let userData;
-  switch (role) {
-    case userTypes.USER:
-      userData = await userService.getUserByEmail(email);
-      break;
+const checkUserByEmail = async (email) => {
+  let userData = await userService.getUserByEmail(email);
+
+  // If user not found, check in admin
+  if (!userData) {
+    userData = await adminService.getAdminByEmail(email);
+    
+    if (!userData) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        'No user or admin found with this email'
+      );
+    }
   }
-  return userData;
-}
+
+  return userData; // Can be user or admin, based on where found
+};
+
 
 module.exports = {
   generateToken,

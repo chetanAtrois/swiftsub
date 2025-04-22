@@ -7,39 +7,53 @@ const { tokenTypes } = require('../config/tokens');
 const User = require('../models/user.model');
 const { responseMessage, userTypes } = require('../constant/constant');
 const Admin = require('../models/admin.model')
+const adminService = require('../services/admin.service');
 
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password } = userBody;
 
+  // Validate role
   const normalizedRole = roleType?.toLowerCase();
   if (!['user', 'admin'].includes(normalizedRole)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid role type');
   }
+
+  // Check email uniqueness
   const emailTakenInUser = await User.isEmailTaken(email);
   const emailTakenInAdmin = await Admin.isEmailTaken(email);
   if (emailTakenInUser || emailTakenInAdmin) {
     const existingRole = emailTakenInUser ? 'user' : 'admin';
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      `This email is already registered as ${existingRole}`
+      `Email already registered as ${existingRole}`
     );
   }
+
+  // Check phone uniqueness
   const phoneTakenInUser = await User.isPhoneNumberTaken(phoneNumber);
   const phoneTakenInAdmin = await Admin.isPhoneNumberTaken(phoneNumber);
   if (phoneTakenInUser || phoneTakenInAdmin) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
   }
+
+  // Validate password (if not Google OAuth)
   if (!method || method !== 'google') {
-    if (!password) throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
+    if (!password) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
+    }
   }
 
+  // Prepare data
   const userData = {
     ...userBody,
     role: normalizedRole,
-    ...(method === 'google' && { password: undefined })
+    userType: normalizedRole, // Explicitly set userType
+    ...(method === 'google' && { password: undefined }), // Skip password for Google
   };
 
-  const newUser = await (normalizedRole === 'admin' ? Admin : User).create(userData);
+  // Create user or admin
+  const Model = normalizedRole === 'admin' ? Admin : User;
+  const newUser = await Model.create(userData);
   return newUser;
 };
 
@@ -112,18 +126,48 @@ const refreshAuth = async (refreshToken) => {
 
 const resetPassword = async (resetPasswordToken, userBody) => {
   try {
-    const { password,confirmNewPassword, userType } = userBody;
-    const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
+    const { password, confirmNewPassword } = userBody;
+
+    // Check if the passwords match
+    if (password !== confirmNewPassword) {
+      throw new Error('Passwords do not match');
+    }
+
+    // Get token doc, which includes userType
+    const resetPasswordTokenDoc = await tokenService.verifyToken(
+      resetPasswordToken,
+      tokenTypes.RESET_PASSWORD
+    );
+    console.log('Token Payload:', resetPasswordTokenDoc);
+
+
+    const userType = resetPasswordTokenDoc.userType; // <- taken from token
+
+    // Get user details from the token (verify if the user exists)
     const user = await checkUserById(resetPasswordTokenDoc.user, userType);
     if (!user) {
       throw new Error(responseMessage.USER_NOT_FOUND);
     }
-    await updateUserById(user.id, userType, {password});
-    await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+
+    // Update user password (hashing is already handled in `updateUserById`)
+    await updateUserById(user.id, userType, { password });
+
+    // Delete the reset password token(s)
+    await Token.deleteMany({
+      user: user.id,
+      type: tokenTypes.RESET_PASSWORD,
+    });
+
+    // You could also add a success message or log for confirmation
+    console.log('Password reset successfully');
+
   } catch (error) {
+    // Handle any errors (token invalid, user not found, password mismatch, etc.)
     throw new ApiError(httpStatus.UNAUTHORIZED, error.message);
   }
 };
+
+
 
 const verifyEmail = async (verifyEmailToken) => {
   try {
@@ -141,38 +185,52 @@ const verifyEmail = async (verifyEmailToken) => {
 
 const changePassword = async (req) => {
   try {
-    const { currentPassword, newPassword, confirmPassword, userType } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
     const userId = req.params.id;
-    const userRole = req.user;
+    const userRole = req.user; // Comes from auth middleware
+    const userType = userRole.userType; // 'admin', 'user', etc.
+
     console.log('userRole', userRole);
+
     const user = await checkUserById(userId, userType);
     if (!user) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
     }
+
+    // If user is not an admin, verify current password
     if (userRole.role !== 'admin' && !(await user.isPasswordMatch(currentPassword))) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.CURRENT_PASSWORD_NOT_MATCH);
     }
+
     if (newPassword !== confirmPassword) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PASSWORD_NOT_MATCH);
     }
-    const updatedUser = await updateUserById(userId, userType, { password: newPassword })
-      
+
+    const updatedUser = await updateUserById(userId, userType, { password: newPassword });
+
     return updatedUser;
   } catch (err) {
     throw new ApiError(httpStatus.BAD_REQUEST, err.message);
   }
 };
 
+
 const checkUserById = async (userId, role) => {
   let userData;
-   switch (role) {
-     case userTypes.USER:
-       userData = await userService.getUserById(userId);
-       break;
-   }
- 
-   return userData;
- }
+  switch (role) {
+    case userTypes.USER:
+      userData = await userService.getUserById(userId);
+      break;
+    case userTypes.ADMIN:
+      userData = await adminService.getAdminById(userId);
+      break;
+    default:
+      throw new Error("Invalid user type");
+  }
+
+  return userData;
+};
+
 
  const updateUserById = async (userId, role, password) => {
   let userData;
@@ -180,6 +238,11 @@ const checkUserById = async (userId, role) => {
      case userTypes.USER:
        userData = await userService.updateUserById(userId, password);
        break;
+       case userTypes.ADMIN:
+       userData = await adminService.updateAdminById(userId, password);
+       break;
+       default:
+      throw new Error("Invalid user type");
    }
    return userData;
  };

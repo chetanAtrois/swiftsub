@@ -4,6 +4,8 @@ const config = require('../config/config');
 const logger = require('../config/logger');
 const { Otp } = require('../models');
 const ApiError = require('../utils/ApiError');
+const jwt = require('jsonwebtoken');
+
 
 // Initialize SMTP transport
 const transport = nodemailer.createTransport(config.email.smtp);
@@ -32,10 +34,14 @@ const sendEmail = async (to, subject, text) => {
  * @param {string} to - Recipient email 
  * @param {string} token - Reset token
  */
-const sendResetPasswordEmail = async (to, token) => {
+const sendResetPasswordEmail = async (to, userID) => {
   const subject = 'Reset password';
+
+  // Generate JWT token with userID (using environment variable for secret key)
+  const token = jwt.sign({ userID: userID }, "thisisasamplesecret", { expiresIn: '1h' });
+
   const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
-  
+
   // Generate and store OTP
   const code = Math.floor(1000 + Math.random() * 9000);
   await Otp.create({
@@ -46,12 +52,13 @@ const sendResetPasswordEmail = async (to, token) => {
   });
 
   const text = `Dear user,
-To reset your password:
-- Use this verification code: ${code}
-- Or click this link: ${resetPasswordUrl}
 
-If you didn't request this, please ignore this email.`;
-  
+  To reset your password:
+  - Use this verification code: ${code}
+  - Or click this link: ${resetPasswordUrl}
+
+  If you didn't request this, please ignore this email.`;
+
   await sendEmail(to, subject, text);
 };
 

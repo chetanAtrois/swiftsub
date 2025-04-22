@@ -41,6 +41,7 @@ const userSchema = mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    
     method: {
       type: String,
       enum: ['google'],
@@ -49,8 +50,9 @@ const userSchema = mongoose.Schema(
     
     userType: {
       type: String,
-      enum: ['User', 'Admin'],
-      default: 'User',
+      default: 'user',
+      enum: ['user'],
+      immutable: true,
     },
   },
   {

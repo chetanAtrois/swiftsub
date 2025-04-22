@@ -74,15 +74,12 @@ const verifyEmail = catchAsync(async (req, res) => {
 
 const changePassword = catchAsync(async (req, res) => {
   const updatedPassword = await authService.changePassword(req);
-  const requestObj = {
-    name: updatedPassword.name,
+  const userData = {
+    ...updatedPassword._doc,
   };
-  let userData = updatedPassword;
-    userData = {
-      ...updatedPassword._doc,
-    };
   res.status(httpStatus.OK).send({ success: true, userData });
 });
+
 
 module.exports = {
   register,

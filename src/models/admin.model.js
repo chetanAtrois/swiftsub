@@ -38,6 +38,12 @@ const adminSchema = mongoose.Schema(
         enum: roles,
         default: 'admin',
       },
+      userType: {
+        type: String,
+        default: 'admin',
+        enum: ['admin'],
+        immutable: true, 
+      },
       method: {
         type: String,
         enum: ['google'],
