@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.post('/registerAdmin', validate(adminValidation.register), adminController.registerAdmin);
 router.post('/loginAdmin', validate(adminValidation.login), adminController.login);
-router.get('/fetchUserList', auth('fetchUserList'), validate(adminValidation.fetchUserData), adminController.fetchUserList);
-router.post('/addCompany', auth('addCompany'), validate(adminValidation.addCompany), adminController.addCompany);
+router.get('/fetchUserList', validate(adminValidation.fetchUserData), adminController.fetchUserList);
+router.post('/addCompany', validate(adminValidation.addCompany), adminController.addCompany);
 router.get('/fetchCompanyList', auth('fetchCompanyList'), validate(adminValidation.fetchCompanyData), adminController.fetchCompanyList);
 
 
