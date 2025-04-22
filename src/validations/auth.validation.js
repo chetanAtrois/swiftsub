@@ -14,7 +14,7 @@ const register = {
       }),
       otherwise: Joi.string().required() 
     }),
-    roleType: Joi.string().required().valid('user'),
+    roleType: Joi.string().required().valid('user','admin'),
     phoneNumber: Joi.string().required(),
     companyName: Joi.string().required(),
     method: Joi.string().valid('google').optional() 
@@ -28,11 +28,10 @@ const login = {
     email: Joi.string().required().email(),
     password: Joi.when('method', {
       is: 'google',
-      then: Joi.string().optional(),  
-      otherwise: Joi.string().required()  
+      then: Joi.string().optional(),
+      otherwise: Joi.string().required()
     }),
-    userType: Joi.string().required(),
-    method: Joi.string().valid('google').optional()  
+    method: Joi.string().valid('google').optional()
   })
 };
 

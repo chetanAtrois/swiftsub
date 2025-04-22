@@ -6,47 +6,59 @@ const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
 const User = require('../models/user.model');
 const { responseMessage, userTypes } = require('../constant/constant');
+const Admin = require('../models/admin.model')
 
 const register = async (userBody) => {
-  console.log(userBody);
+  const { roleType, email, phoneNumber, method, password } = userBody;
 
-  if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
+  const normalizedRole = roleType?.toLowerCase();
+  if (!['user', 'admin'].includes(normalizedRole)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid role type');
+  }
+  const emailTakenInUser = await User.isEmailTaken(email);
+  const emailTakenInAdmin = await Admin.isEmailTaken(email);
+  if (emailTakenInUser || emailTakenInAdmin) {
+    const existingRole = emailTakenInUser ? 'user' : 'admin';
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `This email is already registered as ${existingRole}`
+    );
+  }
+  const phoneTakenInUser = await User.isPhoneNumberTaken(phoneNumber);
+  const phoneTakenInAdmin = await Admin.isPhoneNumberTaken(phoneNumber);
+  if (phoneTakenInUser || phoneTakenInAdmin) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
+  }
+  if (!method || method !== 'google') {
+    if (!password) throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
   }
 
-  if (await User.isPhoneNumberTaken(userBody.phoneNumber)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PHONE_NUMBER_ALREADY_TAKEN);
-  }
+  const userData = {
+    ...userBody,
+    role: normalizedRole,
+    ...(method === 'google' && { password: undefined })
+  };
 
-  if (!userBody.method || userBody.method !== 'google') {
-    if (!userBody.password) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
-    }
-  }
-
-  if (userBody.method === 'google') {
-    delete userBody.password;
-  }
-
-  const newUser = await User.create({
-    role: userBody.roleType,
-    ...userBody
-  });
-
+  const newUser = await (normalizedRole === 'admin' ? Admin : User).create(userData);
   return newUser;
 };
 
 const login = async (userBody) => {
   const { email, password, method } = userBody;
+  let user = await Admin.findOne({ email }) || await User.findOne({ email });
 
-  const user = await User.findOne({ email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
 
-  // Google login - no password needed
   if (method === 'google') {
-    return user;
+    if (user.method !== 'google') {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'This account requires password login'
+      );
+    }
+    return user; 
   }
 
   if (!password) {

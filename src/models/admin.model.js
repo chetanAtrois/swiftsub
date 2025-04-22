@@ -24,7 +24,7 @@ const adminSchema = mongoose.Schema(
       },
       password: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 8,
         validate(value) {
@@ -42,7 +42,12 @@ const adminSchema = mongoose.Schema(
     role: {
         type: String,
         enum: roles,
-        default: 'Admin',
+        default: 'admin',
+      },
+      method: {
+        type: String,
+        enum: ['google'],
+        default: undefined 
       },
   },
   {
@@ -68,9 +73,12 @@ adminSchema.methods.isPasswordMatch = async function (password) {
   return bcrypt.compare(password, user.password);
 };
 
+// admin.model.js
 adminSchema.pre('save', async function (next) {
   const user = this;
-  if (user.isModified('password')) {
+  
+  // Only hash password if it exists and is modified
+  if (user.isModified('password') && user.password) {
     user.password = await bcrypt.hash(user.password, 8);
   }
   next();

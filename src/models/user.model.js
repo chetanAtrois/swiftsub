@@ -45,12 +45,13 @@ const userSchema = mongoose.Schema(
     },
     role: {
       type: String,
+      enum: ['user', 'admin'],
       default: 'user',
     },
     method: {
       type: String,
       enum: ['google'],
-      default: undefined // Won't be stored if not provided
+      default: undefined 
     },
     
     userType: {
@@ -84,7 +85,9 @@ userSchema.methods.isPasswordMatch = async function (password) {
 
 userSchema.pre('save', async function (next) {
   const user = this;
-  if (user.isModified('password')) {
+  
+  // Only hash password if it exists and is modified
+  if (user.isModified('password') && user.password) {
     user.password = await bcrypt.hash(user.password, 8);
   }
   next();

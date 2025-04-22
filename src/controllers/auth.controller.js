@@ -11,13 +11,13 @@ const register = catchAsync(async(req,res)=>{
   res.status(httpStatus.CREATED).send({success:true,user,token}) 
 });
 
-const login = catchAsync(async(req,res)=>{
+const login = catchAsync(async (req, res) => {
   const user = await authService.login(req.body);
-  const token = await tokenService.generateAuthTokens(user,req.body.userType);
-  if(req.body.userType!=='user'){
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
-  }
-  res.status(httpStatus.CREATED).send({success:true,user,token}) 
+  const tokens = await tokenService.generateAuthTokens(
+    user,
+    user.role || 'user' 
+  );
+  res.status(httpStatus.OK).send({ success: true, user, tokens });
 });
 
 const logout = catchAsync(async (req, res) => {
