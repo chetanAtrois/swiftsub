@@ -45,6 +45,7 @@ const forgotPassword = catchAsync(async (req, res) => {
   return res.status(httpStatus.OK).send({ success: true, message: requestObj.message, token: resetPasswordToken });
 });
 
+
 const verifyOtp = catchAsync(async (req, res) => {
   const { otp, email } = req.query;
   const otpVerify = await emailService.verifyOtp(otp, email);

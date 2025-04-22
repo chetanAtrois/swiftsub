@@ -3,42 +3,39 @@ const config = require('./config');
 const { tokenTypes } = require('./tokens');
 const { User, Admin } = require('../models');
 
-// JWT verification options
 const jwtOptions = {
-  secretOrKey: config.jwt.secret, // Secret key from config
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract JWT from Authorization header
+  secretOrKey: config.jwt.secret,
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 };
 
-// JWT verification callback
 const jwtVerify = async (payload, done) => {
   try {
-    // Verify token type (must be ACCESS token)
     if (payload.type !== tokenTypes.ACCESS) {
       throw new Error('Invalid token type');
     }
-
     let user;
-    // Check user type and fetch from appropriate model
     switch (payload.userType) {
       case 'user':
-        user = await User.findById(payload.sub); // Find user by ID
+        user = await User.findById(payload.sub);
+        break;
+      case 'admin':
+        user = await Admin.findById(payload.sub);
         break;
       default:
         throw new Error('Invalid user type');
     }
 
     if (!user) {
-      return done(null, false); // User not found
+      return done(null, false);
     }
-    done(null, {...user.toObject(), role: payload.userType}); // Authentication success
+    done(null, {...user.toObject(), role: payload.userType});
   } catch (error) {
-    done(error, false); // Authentication error
+    done(error, false);
   }
 };
 
-// Create JWT strategy instance
 const jwtStrategy = new JwtStrategy(jwtOptions, jwtVerify);
 
 module.exports = {
-  jwtStrategy, // Export for use in Passport middleware
+  jwtStrategy,
 };

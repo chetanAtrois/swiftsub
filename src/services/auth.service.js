@@ -8,32 +8,59 @@ const User = require('../models/user.model');
 const { responseMessage, userTypes } = require('../constant/constant');
 
 const register = async (userBody) => {
+  console.log(userBody);
 
   if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN)
+    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
   }
+
   if (await User.isPhoneNumberTaken(userBody.phoneNumber)) {
     throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PHONE_NUMBER_ALREADY_TAKEN);
   }
-  const createUser = await User.create({
+
+  if (!userBody.method || userBody.method !== 'google') {
+    if (!userBody.password) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
+    }
+  }
+
+  if (userBody.method === 'google') {
+    delete userBody.password;
+  }
+
+  const newUser = await User.create({
     role: userBody.roleType,
     ...userBody
   });
-  return createUser;
-}
+
+  return newUser;
+};
 
 const login = async (userBody) => {
-  const { email, password,userType } = userBody;
-  const user = await User.findOne({ email: email });
+  const { email, password, method } = userBody;
+
+  const user = await User.findOne({ email });
   if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.WRONG_CREDENTIAL_MESSAGE);
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
-  const userpassword = await user.isPasswordMatch(password);
-  if (!userpassword) {
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.WRONG_CREDENTIAL_MESSAGE);
+
+  // Google login - no password needed
+  if (method === 'google') {
+    return user;
   }
+
+  if (!password) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
+  }
+
+  const isPasswordCorrect = await user.isPasswordMatch(password);
+  if (!isPasswordCorrect) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
+  }
+
   return user;
 };
+
 
 const loginUserWithPhoneNumber = async (userBody) => {
   const { phoneNumber, userType } = userBody;
@@ -143,7 +170,7 @@ const checkUserById = async (userId, role) => {
        break;
    }
    return userData;
- }
+ };
 
 module.exports = {
   register,

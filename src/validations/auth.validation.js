@@ -4,20 +4,36 @@ const { password } = require('./custom.validation');
 const register = {
   body: Joi.object().keys({
     fullName: Joi.string().required(),
-    email: Joi.string().required(),
-    password:Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.when('method', {
+      is: Joi.exist(), 
+      then: Joi.when('method', {
+        is: 'google',
+        then: Joi.string().optional(),
+        otherwise: Joi.string().required()
+      }),
+      otherwise: Joi.string().required() 
+    }),
     roleType: Joi.string().required().valid('user'),
-    phoneNumber:Joi.string().required(),
-    companyName:Joi.string().required()
-
+    phoneNumber: Joi.string().required(),
+    companyName: Joi.string().required(),
+    method: Joi.string().valid('google').optional() 
   }),
 };
+
+
+
 const login = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
-    password:Joi.string().required(),
-    userType:Joi.string().required()
-  }),
+    email: Joi.string().required().email(),
+    password: Joi.when('method', {
+      is: 'google',
+      then: Joi.string().optional(),  
+      otherwise: Joi.string().required()  
+    }),
+    userType: Joi.string().required(),
+    method: Joi.string().valid('google').optional()  
+  })
 };
 
 const loginViaPhoneNumber = {

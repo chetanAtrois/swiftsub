@@ -17,13 +17,26 @@ const userSchema = mongoose.Schema(
     },
     email: {
       type: String,
-      required: false,
+      required: true,
       trim: true,
+      lowercase: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error('Invalid email');
+        }
+      },
     },
     password: {
       type: String,
       required: false,
       trim: true,
+      minlength: 8,
+      validate(value) {
+        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+          throw new Error('Password must contain at least one letter and one number');
+        }
+      },
+      private: true, // used by the toJSON plugin
     },
     phoneNumber: {
       type: String,
@@ -34,6 +47,13 @@ const userSchema = mongoose.Schema(
       type: String,
       default: 'user',
     },
+    method: {
+      type: String,
+      enum: ['manual', 'google'],
+      default: 'manual',
+      required: true,
+    },
+    
     userType: {
       type: String,
       enum: ['User', 'Admin'],
