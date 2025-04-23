@@ -12,13 +12,11 @@ const adminService = require('../services/admin.service');
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password } = userBody;
 
-  // Validate role
   const normalizedRole = roleType?.toLowerCase();
   if (!['user', 'admin'].includes(normalizedRole)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid role type');
   }
 
-  // Check email uniqueness
   const emailTakenInUser = await User.isEmailTaken(email);
   const emailTakenInAdmin = await Admin.isEmailTaken(email);
   if (emailTakenInUser || emailTakenInAdmin) {
@@ -29,29 +27,25 @@ const register = async (userBody) => {
     );
   }
 
-  // Check phone uniqueness
   const phoneTakenInUser = await User.isPhoneNumberTaken(phoneNumber);
   const phoneTakenInAdmin = await Admin.isPhoneNumberTaken(phoneNumber);
   if (phoneTakenInUser || phoneTakenInAdmin) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
   }
 
-  // Validate password (if not Google OAuth)
   if (!method || method !== 'google') {
     if (!password) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
     }
   }
 
-  // Prepare data
   const userData = {
     ...userBody,
     role: normalizedRole,
-    userType: normalizedRole, // Explicitly set userType
-    ...(method === 'google' && { password: undefined }), // Skip password for Google
+    userType: normalizedRole, 
+    ...(method === 'google' && { password: undefined }), 
   };
 
-  // Create user or admin
   const Model = normalizedRole === 'admin' ? Admin : User;
   const newUser = await Model.create(userData);
   return newUser;
@@ -203,7 +197,6 @@ const changePassword = async (req) => {
     throw new ApiError(httpStatus.BAD_REQUEST, err.message);
   }
 };
-
 
 const checkUserById = async (userId, role) => {
   let userData;

@@ -29,20 +29,13 @@ const sendEmail = async (to, subject, text) => {
   await transport.sendMail(msg);
 };
 
-/**
- * Send password reset email with OTP
- * @param {string} to - Recipient email 
- * @param {string} token - Reset token
- */
 const sendResetPasswordEmail = async (to, userID) => {
+  
   const subject = 'Reset password';
-
-  // Generate JWT token with userID (using environment variable for secret key)
   const token = jwt.sign({ userID: userID }, "thisisasamplesecret", { expiresIn: '1h' });
 
   const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
 
-  // Generate and store OTP
   const code = Math.floor(1000 + Math.random() * 9000);
   await Otp.create({
     otp: code,

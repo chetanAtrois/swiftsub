@@ -3,6 +3,8 @@ const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
 const { responseMessage, userTypes } = require('../constant/constant');
 const ApiError = require('../utils/ApiError');
+const User = require('../models/user.model');
+const Admin = require('../models/admin.model');
 
 const register = catchAsync(async(req,res)=>{
   const {roleType} = req.body;
@@ -37,13 +39,25 @@ const refreshTokens = catchAsync(async (req, res) => {
 });
 
 const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  let user = await User.findOne({ email }).select('fullName email _id method');
+  if (!user) {
+    user = await Admin.findOne({ email }).select('fullName email _id method');;
+  }
+  if (user.method === 'google') {
+    return res.status(httpStatus.BAD_REQUEST).send({
+      success: false,
+      message: 'Password reset is not available for Google sign-in accounts.',
+    });
+  }
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body);
-  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
-  const requestObj = {
+  await emailService.sendResetPasswordEmail(email, resetPasswordToken);
+  return res.status(httpStatus.OK).send({
+    success: true,
     message: responseMessage.OTP_SENT_MESSAGE,
-  };
-  return res.status(httpStatus.OK).send({ success: true, message: requestObj.message, token: resetPasswordToken });
+    token: resetPasswordToken });
 });
+
 
 
 const verifyOtp = catchAsync(async (req, res) => {
