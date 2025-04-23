@@ -128,12 +128,10 @@ const resetPassword = async (resetPasswordToken, userBody) => {
   try {
     const { password, confirmNewPassword } = userBody;
 
-    // Check if the passwords match
     if (password !== confirmNewPassword) {
       throw new Error('Passwords do not match');
     }
 
-    // Get token doc, which includes userType
     const resetPasswordTokenDoc = await tokenService.verifyToken(
       resetPasswordToken,
       tokenTypes.RESET_PASSWORD
@@ -141,28 +139,21 @@ const resetPassword = async (resetPasswordToken, userBody) => {
     console.log('Token Payload:', resetPasswordTokenDoc);
 
 
-    const userType = resetPasswordTokenDoc.userType; // <- taken from token
+    const userType = resetPasswordTokenDoc.userType; 
 
-    // Get user details from the token (verify if the user exists)
     const user = await checkUserById(resetPasswordTokenDoc.user, userType);
     if (!user) {
       throw new Error(responseMessage.USER_NOT_FOUND);
     }
-
-    // Update user password (hashing is already handled in `updateUserById`)
     await updateUserById(user.id, userType, { password });
-
-    // Delete the reset password token(s)
     await Token.deleteMany({
       user: user.id,
       type: tokenTypes.RESET_PASSWORD,
     });
 
-    // You could also add a success message or log for confirmation
     console.log('Password reset successfully');
 
   } catch (error) {
-    // Handle any errors (token invalid, user not found, password mismatch, etc.)
     throw new ApiError(httpStatus.UNAUTHORIZED, error.message);
   }
 };
@@ -187,8 +178,8 @@ const changePassword = async (req) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const userId = req.params.id;
-    const userRole = req.user; // Comes from auth middleware
-    const userType = userRole.userType; // 'admin', 'user', etc.
+    const userRole = req.user; 
+    const userType = userRole.userType; 
 
     console.log('userRole', userRole);
 
@@ -197,7 +188,6 @@ const changePassword = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
     }
 
-    // If user is not an admin, verify current password
     if (userRole.role !== 'admin' && !(await user.isPasswordMatch(currentPassword))) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.CURRENT_PASSWORD_NOT_MATCH);
     }
