@@ -48,10 +48,11 @@ const logoutAdmin = async (req) => {
 };
 
 const fetchUserList = async (req) => {
-  const { page, limit, userType } = req.query;
+  const { page, limit,sortBy } = req.query;
   const options = {
     page,
     limit,
+    sortBy
   };
   let Data = await User.paginate({}, options)
   return Data;
@@ -130,10 +131,11 @@ const updateCompany = async (requestBody) => {
 };
 
 const fetchCompanyData = async (req) => {
-  const { page, limit } = req.query;
+  const { page, limit,sortBy } = req.query;
   const options = {
     page,
     limit,
+    sortBy
   };
   let Data = await Company.paginate({}, options)
   return Data;

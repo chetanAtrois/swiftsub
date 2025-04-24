@@ -30,7 +30,7 @@ const fetchUserData = {
   query: Joi.object().keys({
     page: Joi.string().required(),
     limit: Joi.string().required(),
-    userType: Joi.string().required()
+    sortBy:Joi.string().required()
   }),
 };
 const addCompany = {
@@ -47,6 +47,7 @@ const fetchCompanyData = {
   query: Joi.object().keys({
     page: Joi.string().required(),
     limit: Joi.string().required(),
+    sortBy:Joi.string().required()
   }),
 };
 const deleteUser = {
