@@ -11,6 +11,8 @@ const responseMessage = {
   PASSWORD_NOT_MATCH: 'New password and confirm password do not match',
   EMAIL_ALREADY_TAKEN: 'Email already taken',
   PASSWORDS_MUST_MATCH: 'Both password should be same',
+  PHONE_NUMBER_ALREADY_TAKEN: 'Phone number is already taken',
+  COMPANY_NOT_FOUND:'company not found'
 };
 
 const userTypes = {

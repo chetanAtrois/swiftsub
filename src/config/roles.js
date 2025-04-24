@@ -15,6 +15,10 @@ const allRoles = {
     'delete-user',
     'password-change',
     'profile-verified',
+    'deleteUser',
+    'updateUser',
+    'deleteCompany',
+    'updateCompany'
   ],
 };
 

@@ -33,7 +33,6 @@ const sendResetPasswordEmail = async (to, userID) => {
   
   const subject = 'Reset password';
   const token = jwt.sign({ userID: userID }, "thisisasamplesecret", { expiresIn: '1h' });
-  // const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
   const code = Math.floor(1000 + Math.random() * 9000);
   await Otp.create({
     otp: code,
