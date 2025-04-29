@@ -8,6 +8,7 @@ const User = require('../models/user.model');
 const { responseMessage, userTypes } = require('../constant/constant');
 const Admin = require('../models/admin.model')
 const adminService = require('../services/admin.service');
+const Company = require('../models/company.model');
 
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password } = userBody;
@@ -197,6 +198,14 @@ const changePassword = async (req) => {
     throw new ApiError(httpStatus.BAD_REQUEST, err.message);
   }
 };
+const fetchCompanyList = async (req) => {
+  const { sortBy = 'createdAt', order = 'asc' } = req.query;
+  const sortOrder = order === 'desc' ? -1 : 1;
+
+  const companies = await Company.find().sort({ [sortBy]: sortOrder });
+  return companies;
+};
+
 
 const checkUserById = async (userId, role) => {
   let userData;
@@ -239,4 +248,5 @@ module.exports = {
   verifyEmail,
   changePassword,
   loginUserWithPhoneNumber,
+  fetchCompanyList
 };

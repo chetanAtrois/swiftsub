@@ -13,5 +13,7 @@ router.post('/reset-password', validate(authValidation.resetPassword), authContr
 router.get('/verify-otp', validate(authValidation.verifyOtp), authController.verifyOtp);
 router.put('/change-password/:id', auth(), validate(authValidation.changePassword), authController.changePassword);
 router.post('/logout',validate(authValidation.logout),authController.logout);
+router.get('/companyList',validate(authValidation.fetchCompanyList),authController.CompanyList);
+
 
 module.exports = router;

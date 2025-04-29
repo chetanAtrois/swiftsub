@@ -99,6 +99,12 @@ const changePassword = {
     confirmPassword:Joi.string().required()
   }),
 };
+const fetchCompanyList = {
+  query: Joi.object().keys({
+    sortBy:Joi.string().required(),
+    order:Joi.string().required()
+  }),
+};
 
 module.exports = {
   register,
@@ -112,4 +118,5 @@ module.exports = {
   changePassword,
   verifyOtp,
   loginViaPhoneNumber,
+  fetchCompanyList
 };

@@ -93,6 +93,10 @@ const changePassword = catchAsync(async (req, res) => {
   };
   res.status(httpStatus.OK).send({ success: true, userData });
 });
+const CompanyList = catchAsync(async (req, res) => {
+  const companyList = await authService.fetchCompanyList(req);
+  res.status(httpStatus.OK).send({ success: true, companyList });
+});
 
 
 module.exports = {
@@ -107,4 +111,5 @@ module.exports = {
   verifyOtp,
   changePassword,
   loginViaPhoneNumber,
+  CompanyList
 };
