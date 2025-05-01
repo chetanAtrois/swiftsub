@@ -175,9 +175,7 @@ const changePassword = async (req) => {
     const userId = req.params.id;
     const userRole = req.user; 
     const userType = userRole.userType; 
-
     console.log('userRole', userRole);
-
     const user = await checkUserById(userId, userType);
     if (!user) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);

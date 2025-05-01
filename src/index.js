@@ -3,12 +3,14 @@ const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 
-let server;
+let port;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
-  server = app.listen(config.port, () => {
-    logger.info(`Listening to port ${config.port}`);
-  });
+  // server = app.listen(config.port, () => {
+  //   logger.info(`Listening to port ${config.port}`);
+  // });
+  port = config.port || 3001;
+  app.listen(port, () => console.log('listening on port${config.port}'));
 });
 
 const exitHandler = () => {
