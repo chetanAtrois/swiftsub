@@ -13,12 +13,16 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+
 const app = express();
 
+// Logging middleware (disabled in test environment)
 if (config.env !== 'test') {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
+
+// Security & parsing middlewares
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,14 +31,30 @@ app.use(mongoSanitize());
 app.use(compression());
 app.use(cors());
 app.options('*', cors());
+
+// JWT authentication
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
+
+// Rate limiter (production only)
 if (config.env === 'production') {
   app.use('/v1/auth', authLimiter);
-}app.use('/v1', routes);
+}
+
+// Default root route
+app.get('/', (req, res) => {
+  res.status(200).send('Server is up and running!');
+});
+
+// API routes
+app.use('/v1', routes);
+
+// Handle 404 for undefined routes
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
+
+// Error handling middlewares
 app.use(errorConverter);
 app.use(errorHandler);
 
