@@ -119,11 +119,14 @@ const userCheckIn = async (req) => {
               coordinates: [longitude, latitude],
               timestamp: timestamp
             }],
-            $slice: -120 
-          }
-        }
-      });
-      return updatedLocation;
+            $slice: -120,
+          },
+        },
+      },
+      { new: true } 
+    );
+  
+    return updatedLocation;
   };
   
   
