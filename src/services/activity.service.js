@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
 const Admin = require('../models/admin.model')
 const employeeActivityModel = require('../models/employeeActivity.model');
-const ApiError = require('../utils/ApiError')
+const ApiError = require('../utils/ApiError');
+const User = require('../models/user.model');
 
 const userCheckIn = async (req) => {
     const existingCheckIn = await employeeActivityModel.findOne({
@@ -98,11 +99,38 @@ const userCheckIn = async (req) => {
       durationWorked: `${hours} hours and ${minutes} minutes`
     };
   };
+  const updateLocation = async (req) => {
+    const { userId, latitude, longitude } = req.body;
+  
+    if (!userId || latitude == null || longitude == null) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
+    }
+        const timestamp = new Date();
+  
+      const updatedLocation = await User.findByIdAndUpdate(userId, {
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        lastUpdated: timestamp,
+        $push: {
+          locationHistory: {
+            $each: [{
+              coordinates: [longitude, latitude],
+              timestamp: timestamp
+            }],
+            $slice: -120 
+          }
+        }
+      });
+      return updatedLocation;
+  };
   
   
   module.exports = {
     userCheckIn,
     userCheckOut,
-    trackerStatus
+    trackerStatus,
+    updateLocation
   };
   
