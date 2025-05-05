@@ -12,7 +12,13 @@ const checkOut = {
         employeeActivityId:Joi.string().required()
     })
 };
+const getUserLocation={
+    query:Joi.object().keys({
+        userId:Joi.string().required()
+    })
+}
 module.exports = {
     updateLocation,
-    checkOut
+    checkOut,
+    getUserLocation
 }

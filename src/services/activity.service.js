@@ -128,12 +128,29 @@ const userCheckIn = async (req) => {
   
     return updatedLocation;
   };
-  
-  
+
+const getUserLocation = async (req) => {
+  const { userId } = req.query;
+  if (!userId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+  }
+  const user = await User.findById(userId).select('locationHistory');
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  return {
+    userId,
+    totalLocations: user.locationHistory.length,
+    locationHistory: user.locationHistory,
+  };
+};
+
   module.exports = {
     userCheckIn,
     userCheckOut,
     trackerStatus,
-    updateLocation
+    updateLocation,
+    getUserLocation
   };
   

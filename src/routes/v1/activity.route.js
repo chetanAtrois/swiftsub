@@ -10,5 +10,6 @@ router.post('/userCheckIn',auth(),activityController.userCheckIn);
 router.put('/userCheckOut',auth(),validate(activityValidation.checkOut),activityController.userCheckOut);
 router.get('/trackStatus',auth(),activityController.trackerStatus);
 router.post('/updateUserLocation',validate(activityValidation.updateLocation),activityController.updatedLocation);
+router.get('/getUserLocation',validate(activityValidation.getUserLocation),activityController.getUserLocation);
 
 module.exports = router;
