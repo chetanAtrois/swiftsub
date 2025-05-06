@@ -5,12 +5,9 @@ const util = require("util");
 const unlinkFile = util.promisify(fs.unlink);
 
 const s3 = new S3Client({
-  region: config.aws.region,
-  credentials: {
-    accessKeyId: config.aws.accessId,
-    secretAccessKey: config.aws.secretKey,
-  },
-});
+    region: config.aws.region, 
+  });
+  
 
 async function uploadFile(file, folder = 'uploads') {
   const fileStream = fs.createReadStream(file?.path);
