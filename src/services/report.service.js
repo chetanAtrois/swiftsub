@@ -42,7 +42,7 @@ const deleteReport = async(req)=>{
     throw new ApiError(httpStatus.BAD_REQUEST,'give valid reporId');
   }
   return report;
-}
+};
 
 
 module.exports = {

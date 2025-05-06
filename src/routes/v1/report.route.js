@@ -10,5 +10,4 @@ const router = express.Router();
 router.post('/createReport', auth(),upload.array('images', 5), reportController.createReport);
 router.get('/getReport', reportController.getReports);
 router.delete('/deleteReport', reportController.deleteReport);
-
 module.exports = router;

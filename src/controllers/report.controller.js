@@ -31,8 +31,7 @@ const getReports = catchAsync(async (req, res) => {
 const deleteReport = catchAsync(async(req,res)=>{
   const deletedReport = await reportService.deleteReport(req);
   res.status(httpStatus.OK).send({success:true,deletedReport});
-})
-
+});
 
 module.exports = {
   createReport,
