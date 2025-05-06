@@ -105,9 +105,12 @@ const userCheckIn = async (req) => {
     if (!userId || latitude == null || longitude == null) {
       throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
     }
-        const timestamp = new Date();
   
-      const updatedLocation = await User.findByIdAndUpdate(userId, {
+    const timestamp = new Date();
+  
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
         location: {
           type: 'Point',
           coordinates: [longitude, latitude],
@@ -123,28 +126,52 @@ const userCheckIn = async (req) => {
           },
         },
       },
-      { new: true } 
+      { new: true }
     );
   
-    return updatedLocation;
+    const formattedUser = {
+      ...updatedUser.toObject(),
+      location: {
+        latitude: updatedUser.location.coordinates[1],
+        longitude: updatedUser.location.coordinates[0]
+      },
+      locationHistory: updatedUser.locationHistory.map(loc => ({
+        latitude: loc.coordinates[1],
+        longitude: loc.coordinates[0],
+        timestamp: loc.timestamp
+      }))
+    };
+  
+    return formattedUser;
   };
+  
 
-const getUserLocation = async (req) => {
-  const { userId } = req.query;
-  if (!userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
-  }
-  const user = await User.findById(userId).select('locationHistory');
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-
-  return {
-    userId,
-    totalLocations: user.locationHistory.length,
-    locationHistory: user.locationHistory,
+  const getUserLocation = async (req) => {
+    const { userId } = req.query;
+  
+    if (!userId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+    }
+  
+    const user = await User.findById(userId).select('locationHistory');
+  
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+  
+    const formattedHistory = user.locationHistory.map((entry) => ({
+      latitude: entry.coordinates[1],
+      longitude: entry.coordinates[0],
+      timestamp: entry.timestamp,
+    }));
+  
+    return {
+      userId,
+      totalLocations: formattedHistory.length,
+      locationHistory: formattedHistory,
+    };
   };
-};
+  
 
   module.exports = {
     userCheckIn,
