@@ -161,8 +161,7 @@ const userCheckIn = async (req) => {
   
     const formattedHistory = user.locationHistory.map((entry) => ({
       latitude: entry.coordinates[1],
-      longitude: entry.coordinates[0],
-      timestamp: entry.timestamp,
+      longitude: entry.coordinates[0]
     }));
   
     return {
