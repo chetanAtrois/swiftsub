@@ -147,31 +147,41 @@ const userCheckIn = async (req) => {
   
 
   const getUserLocation = async (req) => {
-    const { userId } = req.query;
+    const { userId, date } = req.query;
   
-    if (!userId) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+    if (!userId || !date) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'User ID and date are required');
     }
+  
+    const targetDate = new Date(date);
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(targetDate.getDate() + 1);
   
     const user = await User.findById(userId).select('locationHistory');
   
-    if (!user) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    if (!user || !user.locationHistory) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found or no location history');
     }
   
-    const formattedHistory = user.locationHistory.map((entry) => ({
+    const filteredHistory = user.locationHistory.filter((entry) => {
+      const entryTime = new Date(entry.timestamp);
+      return entryTime >= targetDate && entryTime < nextDate;
+    });
+  
+    const formattedHistory = filteredHistory.map((entry) => ({
       latitude: entry.coordinates[1],
-      longitude: entry.coordinates[0]
+      longitude: entry.coordinates[0],
+      
     }));
   
     return {
       userId,
+      date,
       totalLocations: formattedHistory.length,
       locationHistory: formattedHistory,
     };
   };
   
-
   module.exports = {
     userCheckIn,
     userCheckOut,
