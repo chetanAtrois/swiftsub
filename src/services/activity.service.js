@@ -105,7 +105,6 @@ const userCheckIn = async (req) => {
     if (!userId || latitude == null || longitude == null) {
       throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
     }
-  
     const timestamp = new Date();
   
     const updatedUser = await User.findByIdAndUpdate(
@@ -141,11 +140,9 @@ const userCheckIn = async (req) => {
         timestamp: loc.timestamp
       }))
     };
-  
     return formattedUser;
   };
   
-
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;
   
