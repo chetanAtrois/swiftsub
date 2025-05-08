@@ -16,9 +16,15 @@ const getUserLocation={
     query:Joi.object().keys({
         userId:Joi.string().required()
     })
-}
+};
+
+const getLocationHistory={
+    query:Joi.object().keys({
+        userId:Joi.string().required()
+    })
+};
 module.exports = {
     updateLocation,
     checkOut,
-    getUserLocation
+    getLocationHistory
 }

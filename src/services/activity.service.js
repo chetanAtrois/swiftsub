@@ -143,6 +143,44 @@ const userCheckIn = async (req) => {
     return formattedUser;
   };
   
+  const getLocationHistory = async (req) => {
+    const { userId } = req.query;
+  
+    if (!userId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required");
+    }
+  
+    const user = await User.findById(userId).select("locationHistory");
+  
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+  
+    const groupedByDate = {};
+  
+    user.locationHistory.forEach(loc => {
+      const dateKey = new Date(loc.timestamp).toISOString().split("T")[0]; // e.g. "2025-05-06"
+      
+      if (!groupedByDate[dateKey]) {
+        groupedByDate[dateKey] = [];
+      }
+  
+      groupedByDate[dateKey].push({
+        latitude: loc.coordinates[1],
+        longitude: loc.coordinates[0],
+        timestamp: loc.timestamp,
+      });
+    });
+  
+    return ({
+      userId,
+      locationHistory: groupedByDate,
+    });
+  };
+  
+
+
+
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;
   
@@ -184,6 +222,7 @@ const userCheckIn = async (req) => {
     userCheckOut,
     trackerStatus,
     updateLocation,
-    getUserLocation
+    getUserLocation,
+    getLocationHistory
   };
   

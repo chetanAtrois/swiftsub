@@ -20,6 +20,10 @@ const updatedLocation = catchAsync(async (req, res) => {
     const updatedLocationData = await activityService.updateLocation(req);
     res.status(httpStatus.OK).send({ success: true, updatedLocationData });
 });
+const getUserLocationHistory = catchAsync(async (req, res) => {
+    const locationHistoryData = await activityService.getLocationHistory(req);
+    res.status(httpStatus.OK).send({ success: true, locationHistoryData });
+});
 
 const getUserLocation = catchAsync(async (req, res) => {
     const locationHistoryData = await activityService.getUserLocation(req);
@@ -31,5 +35,6 @@ module.exports = {
     userCheckOut,
     trackerStatus,
     updatedLocation,
-    getUserLocation
+    getUserLocation,
+    getUserLocationHistory
 };
