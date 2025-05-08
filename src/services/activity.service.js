@@ -168,7 +168,6 @@ const userCheckIn = async (req) => {
       groupedByDate[dateKey].push({
         latitude: loc.coordinates[1],
         longitude: loc.coordinates[0],
-        timestamp: loc.timestamp,
       });
     });
   
