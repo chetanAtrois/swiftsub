@@ -16,11 +16,11 @@ const reportSchema = new mongoose.Schema({
   },
   BrandTheyUse: {
     type: String,
-    required: true,
+    required: false,
   },
   notes: {
     type: String,
-    required: true,
+    required: false,
   },
   images: [{
     type: String,  
