@@ -1,19 +1,40 @@
 const catchAsync = require('../utils/catchAsync');
 const reportService = require('../services/report.service');
-const { uploadFileS3 } = require('../config/upload-image');
+const { uploadFileS3,uploadFile } = require('../config/upload-image');
 const httpStatus = require('http-status');
 
 const createReport = catchAsync(async (req, res) => {
-  const files = req.files;
+  const files = req.files || {};
+  console.log("files data is",files)
 
-  if (!files || files.length === 0) {
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'At least one image is required.' });
+  const images = files.images || [];
+  const file = files.file?.[0];
+  console.log("image files",images);
+  console.log("files data is here",file);
+
+  if (!images.length || images.length > 5) {
+    return res.status(httpStatus.BAD_REQUEST).json({ message: 'You must upload between 1 to 5 images.' });
   }
-
-  const imageURIs = await uploadFileS3(files, 'reports');
-  console.log('Authenticated user:', req.user);  
-
-  const report = await reportService.createReport(req, req, imageURIs);  
+  const imageURIs = await uploadFileS3(images, 'reports/images');
+  console.log("imageUri data",imageURIs)
+  let fileData = null;
+  if (file) {
+    const fileUploadResponse = await uploadFile(file, 'reports/files');
+    console.log("fileuploadresponse",fileUploadResponse)
+    if (fileUploadResponse.success) {
+      fileData = {
+        uri: fileUploadResponse.imageURI,
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+      };
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: 'Failed to upload file.' });
+    }
+  } else {
+    return res.status(httpStatus.BAD_REQUEST).send({ message: 'File is required.' });
+  }
+  const report = await reportService.createReport(req, req, imageURIs, fileData);
 
   res.status(httpStatus.CREATED).send({
     success: true,
@@ -21,6 +42,7 @@ const createReport = catchAsync(async (req, res) => {
     data: report,
   });
 });
+
 
 const getReports = catchAsync(async (req, res) => {
   const userId = req.query.userId;

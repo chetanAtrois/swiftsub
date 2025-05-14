@@ -6,8 +6,14 @@ const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-// Route to handle creating a report and uploading images
-router.post('/createReport', auth(),upload.array('images', 5), reportController.createReport);
-router.get('/getReport', reportController.getReports);
+router.post('/createReport', 
+    auth(), 
+    upload.fields([
+      { name: 'images', maxCount: 5 },   
+      { name: 'file', maxCount: 1 }      
+    ]), 
+    reportController.createReport
+  );
+  router.get('/getReport', reportController.getReports);
 router.delete('/deleteReport', reportController.deleteReport);
 module.exports = router;

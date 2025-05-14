@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const reportSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', 
+    ref: 'User',
     required: true,
   },
   companyName: {
@@ -14,18 +14,52 @@ const reportSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  BrandTheyUse: {
-    type: String,
-    required: false,
-  },
   notes: {
     type: String,
     required: false,
   },
-  images: [{
-    type: String,  
+
+  reportDate: {
+    type: Date,
     required: true,
-  }],
+  },
+  reportTime: {
+    type: String,
+    required: true,
+  },
+
+  file: {
+    name: {
+      type: String,
+      required: true,
+    },
+    size: {
+      type: Number,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: false,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
+
+  images: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
+
+  businessSize: {
+    type: String,
+    enum: ['Small Business', 'Medium Business', 'Large Business'],
+    required: true,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

@@ -39,7 +39,6 @@ const userCheckIn = async (req) => {
     return user;
   };
 
-
   const userCheckOut = async (req) => {
     const { employeeActivityId } = req.query;
     const employeeDetails = await employeeActivityModel.findOne({
@@ -159,7 +158,7 @@ const userCheckIn = async (req) => {
     const groupedByDate = {};
   
     user.locationHistory.forEach(loc => {
-      const dateKey = new Date(loc.timestamp).toISOString().split("T")[0]; // e.g. "2025-05-06"
+      const dateKey = new Date(loc.timestamp).toISOString().split("T")[0]; 
       
       if (!groupedByDate[dateKey]) {
         groupedByDate[dateKey] = [];
@@ -177,9 +176,6 @@ const userCheckIn = async (req) => {
     });
   };
   
-
-
-
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;
   
@@ -190,7 +186,6 @@ const userCheckIn = async (req) => {
     const targetDate = new Date(date);
     const nextDate = new Date(targetDate);
     nextDate.setDate(targetDate.getDate() + 1);
-  
     const user = await User.findById(userId).select('locationHistory');
   
     if (!user || !user.locationHistory) {
