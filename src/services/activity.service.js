@@ -150,7 +150,6 @@ const userCheckIn = async (req) => {
     }
   
     const user = await User.findById(userId).select("locationHistory");
-  
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
@@ -158,23 +157,44 @@ const userCheckIn = async (req) => {
     const groupedByDate = {};
   
     user.locationHistory.forEach(loc => {
-      const dateKey = new Date(loc.timestamp).toISOString().split("T")[0]; 
-      
+      const dateKey = new Date(loc.timestamp).toISOString().split("T")[0];
+  
       if (!groupedByDate[dateKey]) {
-        groupedByDate[dateKey] = [];
+        groupedByDate[dateKey] = {
+          locations: [],
+          timing: []
+        };
       }
   
-      groupedByDate[dateKey].push({
+      groupedByDate[dateKey].locations.push({
         latitude: loc.coordinates[1],
-        longitude: loc.coordinates[0],
+        longitude: loc.coordinates[0]
       });
     });
   
-    return ({
-      userId,
-      locationHistory: groupedByDate,
+    const timing = await employeeActivityModel.find({ employeeId: userId })
+      .select('checkInTime checkOutTime createdAt updatedAt')
+      .sort({ checkInTime: -1 });
+  
+      timing.forEach(log => {
+      const dateKey = new Date(log.checkInTime || log.createdAt).toISOString().split("T")[0];
+  
+      if (!groupedByDate[dateKey]) {
+        groupedByDate[dateKey] = {
+          locations: [],
+          timing: []
+        };
+      }
+  
+      groupedByDate[dateKey].timing.push(log);
     });
+  
+    return {
+      userId,
+      historyByDate: groupedByDate
+    };
   };
+  
   
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;

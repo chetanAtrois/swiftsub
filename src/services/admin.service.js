@@ -7,10 +7,9 @@ const Company = require('../models/company.model');
 const Token = require('../models/token.model');
 const { tokenTypes } = require('../config/tokens');
 
-
 const createAdmin = async (userBody) => {
   const { email, phoneNumber } = userBody;
-  console.log("email,role,phone", userBody)
+  console.log("email,role,phone", userBody);
   if (await Admin.isEmailTaken(email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
   }
@@ -57,6 +56,7 @@ const fetchUserList = async (req) => {
   let Data = await User.paginate({}, options)
   return Data;
 };
+
 const deleteUser = async (req) => {
   const { userId } = req.query;
   const deletedUser = await User.findOneAndDelete({ _id: userId });
@@ -65,6 +65,7 @@ const deleteUser = async (req) => {
   }
   return deletedUser;
 };
+
 const updateUser = async (requestBody) => {
   const { userId } = requestBody.query;
 
@@ -147,7 +148,7 @@ const deleteCompany = async(req)=>{
     throw new ApiError(httpStatus.BAD_REQUEST,responseMessage.COMPANY_NOT_FOUND);
   }
   return companyData;
-}
+};
 const getAdminByEmail = async (email) => {
   return Admin.findOne({ email });
 };
@@ -166,7 +167,6 @@ const updateAdminById = async (userId, updateBody) => {
   await user.save();
   return user;
 };
-
 
 module.exports = {
   createAdmin,
