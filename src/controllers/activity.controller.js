@@ -29,6 +29,10 @@ const getUserLocation = catchAsync(async (req, res) => {
     const locationHistoryData = await activityService.getUserLocation(req);
     res.status(httpStatus.OK).send({ success: true, locationHistoryData });
 });
+const turnOffAlarm = catchAsync(async (req, res) => {
+    const alarmoff = await activityService.turnOffAlarm(req);
+    res.status(httpStatus.OK).send({ success: true, alarmoff });
+});
 
 module.exports = {
     userCheckIn,
@@ -36,5 +40,6 @@ module.exports = {
     trackerStatus,
     updatedLocation,
     getUserLocation,
-    getUserLocationHistory
+    getUserLocationHistory,
+    turnOffAlarm
 };

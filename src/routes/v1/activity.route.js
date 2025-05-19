@@ -12,5 +12,6 @@ router.get('/trackStatus',auth(),activityController.trackerStatus);
 router.post('/updateUserLocation',validate(activityValidation.updateLocation),activityController.updatedLocation);
 router.get('/getUserLocation',activityController.getUserLocation);
 router.get('/getLocationHistory',validate(activityValidation.getLocationHistory),activityController.getUserLocationHistory);
+router.post('/alarmOff',validate(activityValidation.alarmOff),activityController.turnOffAlarm);
 
 module.exports = router;

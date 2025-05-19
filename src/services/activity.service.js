@@ -230,6 +230,25 @@ const userCheckIn = async (req) => {
       locationHistory: formattedHistory,
     };
   };
+
+  const turnOffAlarm = async (req) => {
+    const { userId } = req.body;
+  
+    if (!userId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+    }
+  
+    const currentTime = new Date();
+    await employeeActivityModel.updateOne(
+      { employeeId: userId },
+      { $push: { alarmLogs: currentTime } },
+      { upsert: true }
+    );
+  
+    return {time: currentTime };
+  };
+  
+  
   
   module.exports = {
     userCheckIn,
@@ -237,6 +256,7 @@ const userCheckIn = async (req) => {
     trackerStatus,
     updateLocation,
     getUserLocation,
-    getLocationHistory
+    getLocationHistory,
+    turnOffAlarm
   };
   

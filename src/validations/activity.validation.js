@@ -23,8 +23,14 @@ const getLocationHistory={
         userId:Joi.string().required()
     })
 };
+const alarmOff={
+    body:Joi.object().keys({
+        userId:Joi.string().required(),
+    })
+};
 module.exports = {
     updateLocation,
     checkOut,
-    getLocationHistory
+    getLocationHistory,
+    alarmOff
 }
