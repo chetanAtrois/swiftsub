@@ -13,5 +13,6 @@ router.post('/updateUserLocation',validate(activityValidation.updateLocation),ac
 router.get('/getUserLocation',activityController.getUserLocation);
 router.get('/getLocationHistory',validate(activityValidation.getLocationHistory),activityController.getUserLocationHistory);
 router.post('/alarmOff',validate(activityValidation.alarmOff),activityController.turnOffAlarm);
+router.post('/autoAlarmOff',validate(activityValidation.autoAlarmOff),activityController.autoTurnOffAlarm);
 
 module.exports = router;

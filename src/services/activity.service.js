@@ -100,12 +100,10 @@ const userCheckIn = async (req) => {
   };
   const updateLocation = async (req) => {
     const { userId, latitude, longitude } = req.body;
-  
     if (!userId || latitude == null || longitude == null) {
       throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
     }
     const timestamp = new Date();
-  
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
@@ -126,7 +124,6 @@ const userCheckIn = async (req) => {
       },
       { new: true }
     );
-  
     const formattedUser = {
       ...updatedUser.toObject(),
       location: {
@@ -153,9 +150,7 @@ const userCheckIn = async (req) => {
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
-  
     const groupedByDate = {};
-  
     user.locationHistory.forEach(loc => {
       const dateKey = new Date(loc.timestamp).toISOString().split("T")[0];
   
@@ -232,20 +227,66 @@ const userCheckIn = async (req) => {
   };
 
   const turnOffAlarm = async (req) => {
-    const { userId } = req.body;
+      const { userId } = req.body;
   
-    if (!userId) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
-    }
+      if (!userId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+      }
   
-    const currentTime = new Date();
-    await employeeActivityModel.updateOne(
-      { employeeId: userId },
-      { $push: { alarmLogs: currentTime } },
-      { upsert: true }
-    );
+      const currentTime = new Date();
   
-    return {time: currentTime };
+      await employeeActivityModel.updateOne(
+        { employeeId: userId },
+        {
+          $push: {
+            alarmLogs: {
+              time: currentTime,
+              turnedOffBy: 'user'
+            }
+          }
+        },
+        { upsert: true }
+      );
+  
+      return({
+        success: true,
+        message: "Alarm turned off successfully",
+        data: {
+          time: currentTime,
+          turnedOffBy: "user"
+        }
+      });
+  };
+  const autoTurnOffAlarm = async (req) => {
+      const { userId } = req.body;
+  
+      if (!userId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+      }
+  
+      const currentTime = new Date();
+  
+      await employeeActivityModel.updateOne(
+        { employeeId: userId },
+        {
+          $push: {
+            alarmLogs: {
+              time: currentTime,
+              turnedOffBy: 'system'
+            }
+          }
+        },
+        { upsert: true }
+      );
+  
+      return({
+        success: true,
+        message: "Alarm auto turned off by system",
+        data: {
+          time: currentTime,
+          turnedOffBy: "system"
+        }
+      });
   };
   
   
@@ -257,6 +298,7 @@ const userCheckIn = async (req) => {
     updateLocation,
     getUserLocation,
     getLocationHistory,
-    turnOffAlarm
+    turnOffAlarm,
+    autoTurnOffAlarm
   };
   

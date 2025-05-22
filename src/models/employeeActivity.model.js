@@ -21,10 +21,19 @@ const employeeActvitySchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  alarmLogs: {
-    type: [Date],
-    default: []
-  },
+  alarmLogs: [
+    {
+      time: {
+        type: Date,
+        required: true
+      },
+      turnedOffBy: {
+        type: String,
+        enum: ['user', 'system'],
+        required: true
+      }
+    }
+  ],
     status: {
     type: String,
     enum: ["checked-in", "checked-out"],
