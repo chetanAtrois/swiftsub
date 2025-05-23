@@ -7,21 +7,6 @@ const User = require('../models/user.model');
 const userCheckIn = async (req) => {
   const { checkInDate, checkInTime } = req.body;
 
-  if (!checkInDate || !checkInTime) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Check-in date and time are required");
-  }
-
-  const selectedDateTime = new Date(`${checkInDate}T${checkInTime}:00`);
-  console.log("User selected check-in datetime:", selectedDateTime);
-
-  const now = new Date();
-  
-  console.log("Current datetime:", now);
-
-  if (selectedDateTime < now) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Check-in time cannot be in the past");
-  }
-
   const existingCheckIn = await employeeActivityModel.findOne({
     employeeId: req.user._id,
     status: "checked-in",
@@ -31,11 +16,19 @@ const userCheckIn = async (req) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User is already checked in");
   }
 
-  const scheduledTime = new Date(checkInDate);
-  scheduledTime.setHours(9, 0, 0, 0);
+  const istCheckIn = new Date(`${checkInDate}T${checkInTime}:00+05:30`);
 
-  const timeDifferenceInMilliseconds = selectedDateTime - scheduledTime;
-  const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 60);
+  const now = new Date();
+
+  console.log("User selected check-in datetime:", istCheckIn.toISOString());
+  console.log("Current datetime (server):", now.toISOString());
+
+  if (istCheckIn < now) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Check-in time must be in the future");
+  }
+
+  const scheduledTime = new Date(`${checkInDate}T09:00:00+05:30`);
+  const timeDifferenceInMinutes = (istCheckIn - scheduledTime) / (1000 * 60);
 
   let checkInStatus;
   if (timeDifferenceInMinutes < 0) {
@@ -48,7 +41,7 @@ const userCheckIn = async (req) => {
 
   const user = await employeeActivityModel.create({
     employeeId: req.user._id,
-    checkInTime: selectedDateTime,
+    checkInTime: istCheckIn,
     checkInTimeDifference: timeDifferenceInMinutes,
     checkInStatus,
     status: "checked-in",
@@ -56,8 +49,6 @@ const userCheckIn = async (req) => {
 
   return user;
 };
-
-
 
   const userCheckOut = async (req) => {
     const { employeeActivityId } = req.query;
