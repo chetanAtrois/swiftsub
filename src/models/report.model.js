@@ -57,7 +57,7 @@ const reportSchema = new mongoose.Schema({
   businessSize: {
     type: String,
     enum: ['Small Business', 'Medium Business', 'Large Business'],
-    required: true,
+    required: false,
   },
 
   createdAt: {
