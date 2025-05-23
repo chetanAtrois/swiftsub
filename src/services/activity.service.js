@@ -5,39 +5,54 @@ const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
 
 const userCheckIn = async (req) => {
-    const existingCheckIn = await employeeActivityModel.findOne({
-        employeeId: req.user._id,
-        status: "checked-in"
-      });
-    
-      if (existingCheckIn) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "User is already checked in");
-      }
-    const scheduledTime = new Date();
-    console.log("nfsnjns",scheduledTime)
-    scheduledTime.setHours(9, 0, 0, 0); 
-    const actualEmployeeTime = new Date(); 
-    const timeDifferenceInMilliseconds = actualEmployeeTime - scheduledTime;
-    const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 60);
-  
-    let checkInStatus;
-    if (timeDifferenceInMinutes < 0) {
-      checkInStatus = "early";
-    } else if (timeDifferenceInMinutes === 0) {
-      checkInStatus = "on-time";
-    } else {
-      checkInStatus = "late";
-    }
-    const user = await employeeActivityModel.create({
-      employeeId: req.user._id,
-      checkInTime: actualEmployeeTime,
-      checkInTimeDifference: timeDifferenceInMinutes,
-      checkInStatus,
-      status: "checked-in"  
-    });
-  
-    return user;
-  };
+  const existingCheckIn = await employeeActivityModel.findOne({
+    employeeId: req.user._id,
+    status: "checked-in"
+  });
+
+  if (existingCheckIn) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User is already checked in");
+  }
+
+  const { checkInDate, checkInTime } = req.body;
+
+  if (!checkInDate || !checkInTime) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Check-in date and time are required");
+  }
+
+  const fullDateTimeString = `${checkInDate}T${checkInTime}`;
+  const userProvidedTime = new Date(fullDateTimeString);
+  const currentTime = new Date();
+
+  if (userProvidedTime < currentTime) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Current time and selected time does not match");
+  }
+
+  const scheduledTime = new Date(`${checkInDate}T09:00:00`);
+
+  const timeDifferenceInMilliseconds = userProvidedTime - scheduledTime;
+  const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 60);
+
+  let checkInStatus;
+  if (timeDifferenceInMinutes < 0) {
+    checkInStatus = "early";
+  } else if (timeDifferenceInMinutes === 0) {
+    checkInStatus = "on-time";
+  } else {
+    checkInStatus = "late";
+  }
+
+  const user = await employeeActivityModel.create({
+    employeeId: req.user._id,
+    checkInTime: userProvidedTime,
+    checkInTimeDifference: timeDifferenceInMinutes,
+    checkInStatus,
+    status: "checked-in"
+  });
+
+  return user;
+};
+
 
   const userCheckOut = async (req) => {
     const { employeeActivityId } = req.query;
