@@ -15,6 +15,7 @@ const userCheckIn = async (req) => {
   console.log("User selected check-in datetime:", selectedDateTime);
 
   const now = new Date();
+  
   console.log("Current datetime:", now);
 
   if (selectedDateTime < now) {
