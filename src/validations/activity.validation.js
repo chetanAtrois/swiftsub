@@ -24,12 +24,12 @@ const getLocationHistory={
 };
 const alarmOff={
     body:Joi.object().keys({
-        userId:Joi.string().required(),
+        activityId:Joi.string().required(),
     })
 };
 const autoAlarmOff={
     body:Joi.object().keys({
-        userId:Joi.string().required(),
+        activityId:Joi.string().required(),
     })
 };
 module.exports = {

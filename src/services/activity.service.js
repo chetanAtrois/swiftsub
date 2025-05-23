@@ -227,47 +227,48 @@ const userCheckIn = async (req) => {
   };
 
   const turnOffAlarm = async (req) => {
-      const { userId } = req.body;
+    const { activityId } = req.body;
   
-      if (!userId) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
-      }
+    if (!activityId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Activity ID is required');
+    }
   
-      const currentTime = new Date();
+    const currentTime = new Date();
   
-      await employeeActivityModel.updateOne(
-        { employeeId: userId },
-        {
-          $push: {
-            alarmLogs: {
-              time: currentTime,
-              turnedOffBy: 'user'
-            }
+    await employeeActivityModel.updateOne(
+      { _id: activityId },
+      {
+        $push: {
+          alarmLogs: {
+            time: currentTime,
+            turnedOffBy: 'user'
           }
-        },
-        { upsert: true }
-      );
-  
-      return({
-        success: true,
-        message: "Alarm turned off successfully",
-        data: {
-          time: currentTime,
-          turnedOffBy: "user"
         }
-      });
-  };
-  const autoTurnOffAlarm = async (req) => {
-      const { userId } = req.body;
+      }
+    );
   
-      if (!userId) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
+    return {
+      success: true,
+      message: "Alarm turned off successfully",
+      data: {
+        time: currentTime,
+        turnedOffBy: "user"
+      }
+    };
+  };
+  
+  
+  const autoTurnOffAlarm = async (req) => {
+      const { activityId } = req.body;
+  
+      if (!activityId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'activityId ID is required');
       }
   
       const currentTime = new Date();
   
       await employeeActivityModel.updateOne(
-        { employeeId: userId },
+        { _id: activityId },
         {
           $push: {
             alarmLogs: {
@@ -279,14 +280,14 @@ const userCheckIn = async (req) => {
         { upsert: true }
       );
   
-      return({
+      return{
         success: true,
         message: "Alarm auto turned off by system",
         data: {
           time: currentTime,
           turnedOffBy: "system"
         }
-      });
+      };
   };
   
   
