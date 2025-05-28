@@ -61,7 +61,6 @@ const userCheckIn = async (req) => {
       if (!employeeDetails) {
         throw new ApiError(httpStatus.BAD_REQUEST, "No active check-in found or already checked out");
       }
-  
     const timeDiffInMilliseconds = new Date() - new Date(employeeDetails.checkInTime);
     const timeDiffInHours = timeDiffInMilliseconds / (1000 * 60 * 60);
       const employeeCheckout = await employeeActivityModel.findOneAndUpdate(
@@ -152,7 +151,6 @@ const userCheckIn = async (req) => {
   
   const getLocationHistory = async (req) => {
     const { userId } = req.query;
-  
     if (!userId) {
       throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required");
     }
@@ -191,7 +189,6 @@ const userCheckIn = async (req) => {
           timing: []
         };
       }
-  
       groupedByDate[dateKey].timing.push(log);
     });
   
@@ -200,7 +197,6 @@ const userCheckIn = async (req) => {
       historyByDate: groupedByDate
     };
   };
-  
   
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;

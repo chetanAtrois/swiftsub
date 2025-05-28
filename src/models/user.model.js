@@ -47,16 +47,30 @@ const userSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
+    image: {
+      type: String,
+      default: null,
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],
       default: 'user',
+    },
+    address:{
+      type:String,
+      required:false
     },
     
     method: {
       type: String,
       enum: ['google'],
       default: undefined 
+    },
+    type:{
+      type:String,
+      enum:['Client,Partner,Colleague'],
+      default:undefined,
+      required:false
     },
     
     userType: {

@@ -237,6 +237,79 @@ const checkUserById = async (userId, role) => {
    return userData;
  };
 
+ const getUserProfile = async(req)=>{
+  const {userId} = req.query;
+  if(!userId){
+    throw new Error("UserId is required");
+  }
+  const user = await User.findOne({_id:userId});
+  if(!user){
+    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
+  }
+  return{
+    user
+  }
+ };
+
+ const updateUser = async (requestBody) => {
+  const { userId } = requestBody.query;
+
+  const isUserExists = await User.findOne({ _id: userId });
+  if (!isUserExists) {
+    throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_FOUND);
+  };
+  if (requestBody.body.email) {
+    const emailTaken = await User.isEmailTaken(requestBody.body.email);
+    if (emailTaken) {
+      throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
+    }
+  }
+  if (requestBody.body.phoneNumber) {
+    const numberTaken = await User.isPhoneNumberTaken(requestBody.body.phoneNumber);
+    if (numberTaken) {
+      throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PHONE_NUMBER_ALREADY_TAKEN);
+    }
+  }
+  const updateData = {
+    ...requestBody.body,
+  };
+  const updatedUser = await User.findOneAndUpdate({
+    _id: userId
+  },
+    updateData,
+    {
+      new: true
+    });
+  console.log('updatedUser', updatedUser);
+  return { updatedUser };
+};
+
+const uploaderImage = (req, imageURI) => {
+  const userId = req.user?._id;
+  if (!userId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
+  }
+
+  return { userId, image: imageURI };
+};
+
+const uploadImage = async (req, imageURI) => {
+  const { userId, image } = uploaderImage(req, imageURI);
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { image },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  return updatedUser;
+};
+
+
 module.exports = {
   register,
   login,
@@ -246,5 +319,8 @@ module.exports = {
   verifyEmail,
   changePassword,
   loginUserWithPhoneNumber,
-  fetchCompanyList
+  fetchCompanyList,
+  getUserProfile,
+  updateUser,
+  uploadImage
 };

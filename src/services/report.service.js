@@ -45,7 +45,6 @@ const createReport = async (req, data, imageURIs, fileURI) => {
   return report;
 };
 
-
 const getReportsByUser = async (userId) => {
   if (!userId) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');

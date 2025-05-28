@@ -3,6 +3,8 @@ const validate = require('../../middlewares/validate');
 const authValidation = require('../../validations/auth.validation');
 const authController = require('../../controllers/auth.controller');
 const auth = require('../../middlewares/auth');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });  // Temporary folder for storing files
 
 const router = express.Router();
 
@@ -14,6 +16,13 @@ router.get('/verify-otp', validate(authValidation.verifyOtp), authController.ver
 router.put('/change-password/:id', auth(), validate(authValidation.changePassword), authController.changePassword);
 router.post('/logout',validate(authValidation.logout),authController.logout);
 router.get('/companyList',validate(authValidation.fetchCompanyList),authController.CompanyList);
-
-
+router.get('/getUserProfile',validate(authValidation.getUserProfile),authController.getUserProfile);
+router.put('/updateUser',validate(authValidation.updateUser),authController.updateUser);
+router.post(
+    '/uploadProfileImage',
+    auth(), 
+    upload.fields([{ name: 'image', maxCount: 1 }]), 
+    authController.uploadUserProfileImage 
+  );
+  
 module.exports = router;

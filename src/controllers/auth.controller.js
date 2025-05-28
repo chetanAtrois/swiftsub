@@ -5,6 +5,8 @@ const { responseMessage, userTypes } = require('../constant/constant');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
 const Admin = require('../models/admin.model');
+const { uploadFile } = require('../config/upload-image');
+
 
 const register = catchAsync(async(req,res)=>{
   const {roleType} = req.body;
@@ -58,8 +60,6 @@ const forgotPassword = catchAsync(async (req, res) => {
     token: resetPasswordToken });
 });
 
-
-
 const verifyOtp = catchAsync(async (req, res) => {
   const { otp, email } = req.query;
   const otpVerify = await emailService.verifyOtp(otp, email);
@@ -97,6 +97,42 @@ const CompanyList = catchAsync(async (req, res) => {
   const companyList = await authService.fetchCompanyList(req);
   res.status(httpStatus.OK).send({ success: true, companyList });
 });
+const getUserProfile = catchAsync(async(req,res)=>{
+  const userList = await authService.getUserProfile(req);
+  res.status(httpStatus.OK).send({success:true,userList});
+});
+
+const updateUser = catchAsync(async(req,res)=>{
+  const updatedList = await authService.updateUser(req);
+  res.status(httpStatus.OK).send({success:true,updatedList});
+});
+
+const uploadUserProfileImage = catchAsync(async (req, res) => {
+  const files = req.files || {};
+  const imageFile = files.image?.[0];
+
+  if (!imageFile) {
+    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Image file is required.' });
+  }
+
+  const uploadResponse = await uploadFile(imageFile, 'users/profile-images');
+
+  if (!uploadResponse?.success || !uploadResponse?.imageURI) {
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Image upload failed.' });
+  }
+
+  const updatedUser = await authService.uploadImage(req, uploadResponse.imageURI);
+
+  res.status(httpStatus.OK).send({
+    success: true,
+    message: 'Profile image uploaded successfully.',
+    data: {
+      userId: updatedUser._id,
+      image: updatedUser.image
+    },
+  });
+});
+
 
 
 module.exports = {
@@ -111,5 +147,8 @@ module.exports = {
   verifyOtp,
   changePassword,
   loginViaPhoneNumber,
-  CompanyList
+  CompanyList,
+  getUserProfile,
+  updateUser,
+  uploadUserProfileImage
 };
