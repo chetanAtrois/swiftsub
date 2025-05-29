@@ -56,21 +56,11 @@ const userSchema = mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
-    address:{
-      type:String,
-      required:false
-    },
     
     method: {
       type: String,
       enum: ['google'],
       default: undefined 
-    },
-    type:{
-      type:String,
-      enum:['Client,Partner,Colleague'],
-      default:undefined,
-      required:false
     },
     
     userType: {

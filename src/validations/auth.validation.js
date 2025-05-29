@@ -31,8 +31,6 @@ const updateUser = {
       fullName: Joi.string().required(),
       companyName:Joi.string().required(),
       phoneNumber:Joi.string().required(),
-      address:Joi.string().required(),
-      type:Joi.string().required()
     })
 };
 
