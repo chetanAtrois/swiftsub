@@ -14,7 +14,7 @@ const userCheckOut = catchAsync(async (req, res) => {
 
 const trackerStatus = catchAsync(async (req, res) => {
     const trackDetails = await activityService.trackerStatus(req);
-    res.status(httpStatus.OK).send({ success: true, message:"You are checkedIn and your timer is running",trackDetails });
+    res.status(httpStatus.OK).send({ success: true,trackDetails });
 
 });
 const updatedLocation = catchAsync(async (req, res) => {

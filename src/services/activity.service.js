@@ -97,20 +97,29 @@ const userCheckIn = async (req) => {
     const currentTime = new Date();
     const checkInTime = new Date(employeeDetails.checkInTime);
     const timeDiffInMilliseconds = currentTime - checkInTime;
+  
     if (timeDiffInMilliseconds < 0) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Your check-in time is in the future. Please wait until check-in time.");
+      return {
+        message: "Your check-in time is in the future. Please wait until check-in time.",
+        status: "checked-in",
+        checkInTime,
+        currentTime
+      };
     }
+  
     const totalMinutes = Math.floor(timeDiffInMilliseconds / (1000 * 60));
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
   
     return {
+      message:"You are checkedIn and your timer is running",
       status: "checked-in",
-      checkInTime,       
-      currentTime,       
+      checkInTime,
+      currentTime,
       durationWorked: `${hours} hours and ${minutes} minutes`
     };
   };
+  
   const updateLocation = async (req) => {
     const { userId, latitude, longitude } = req.body;
     if (!userId || latitude == null || longitude == null) {
