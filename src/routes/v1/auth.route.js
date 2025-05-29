@@ -14,7 +14,7 @@ router.post('/forgot-password', validate(authValidation.forgotPassword), authCon
 router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);
 router.get('/verify-otp', validate(authValidation.verifyOtp), authController.verifyOtp);
 router.put('/change-password/:id', auth(), validate(authValidation.changePassword), authController.changePassword);
-router.post('/logout',validate(authValidation.logout),authController.logout);
+router.post('/logout',auth(),validate(authValidation.logout),authController.logout);
 router.get('/companyList',validate(authValidation.fetchCompanyList),authController.CompanyList);
 router.get('/getUserProfile',validate(authValidation.getUserProfile),authController.getUserProfile);
 router.put('/updateUser',validate(authValidation.updateUser),authController.updateUser);

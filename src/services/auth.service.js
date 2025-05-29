@@ -9,6 +9,7 @@ const { responseMessage, userTypes } = require('../constant/constant');
 const Admin = require('../models/admin.model')
 const adminService = require('../services/admin.service');
 const Company = require('../models/company.model');
+const employeeActivityModel = require('../models/employeeActivity.model');
 
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password } = userBody;
@@ -97,13 +98,50 @@ const loginUserWithPhoneNumber = async (userBody) => {
 };
 
 const logout = async (req) => {
-  const { refreshToken, email } = req.body;
-  const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
+  const { refreshToken } = req.body;
+  const userId = req.user._id; 
+
+  const refreshTokenDoc = await Token.findOne({
+    token: refreshToken,
+    type: tokenTypes.REFRESH,
+    blacklisted: false,
+  });
+
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, responseMessage.NOT_FOUND);
   }
+
   await refreshTokenDoc.remove();
+
+  const activeCheckIn = await employeeActivityModel.findOne({
+    employeeId: userId,
+    status: "checked-in",
+  });
+
+  if (activeCheckIn) {
+    const timeDiffInMilliseconds = new Date() - new Date(activeCheckIn.checkInTime);
+    const timeDiffInHours = timeDiffInMilliseconds / (1000 * 60 * 60);
+
+    await employeeActivityModel.findOneAndUpdate(
+      { _id: activeCheckIn._id },
+      {
+        $set: {
+          checkOutTime: new Date(),
+          timeDiffInHours,
+          status: "checked-out",
+        },
+      },
+      { new: true }
+    );
+  }
+
+  return {
+    message: activeCheckIn
+      ? 'User checked out and logged out successfully'
+      : 'User logged out successfully',
+  };
 };
+
 
 const refreshAuth = async (refreshToken) => {
   try {
