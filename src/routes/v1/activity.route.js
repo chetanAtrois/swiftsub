@@ -16,5 +16,7 @@ router.post('/alarmOff',validate(activityValidation.alarmOff),activityController
 router.post('/autoAlarmOff',validate(activityValidation.autoAlarmOff),activityController.autoTurnOffAlarm);
 router.post('/createNote',auth(),validate(activityValidation.createNote),activityController.createNote);
 router.get('/getNote',validate(activityValidation.getNote),activityController.getNote);
+router.post('/saveContact',auth(),validate(activityValidation.saveContact),activityController.createContact);
+router.get('/getContact',validate(activityValidation.getContact),activityController.getContact);
 
 module.exports = router;

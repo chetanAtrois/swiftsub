@@ -4,6 +4,7 @@ const employeeActivityModel = require('../models/employeeActivity.model');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
 const Note = require('../models/note.model');
+const Contact = require('../models/contact.model');
 
 const userCheckIn = async (req) => {
   const { checkInDate, checkInTime } = req.body;
@@ -265,7 +266,6 @@ const userCheckIn = async (req) => {
         }
       }
     );
-  
     return {
       success: true,
       message: "Alarm turned off successfully",
@@ -275,7 +275,6 @@ const userCheckIn = async (req) => {
       }
     };
   };
-  
   
   const autoTurnOffAlarm = async (req) => {
       const { activityId } = req.body;
@@ -334,6 +333,43 @@ const userCheckIn = async (req) => {
     }
     return user;
   };
+
+  const saveContact = async (req) => {
+    const user = await User.findOne({
+      _id:req.user._id
+    })
+    console.log("userId",user);
+  
+    if (!user) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
+    }
+  
+    const contactEntry = {
+      contactName: req.body.contactName,
+      contactNumber: req.body.contactNumber,
+      contactNote: req.body.contactNote
+    };
+  
+    await Contact.findOneAndUpdate(
+      { employeeId: user._id },
+      {
+        $push: { contactDetails: contactEntry }
+      },
+      { upsert: true, new: true } 
+    );
+  
+    return {
+      contactDetails: contactEntry
+    };
+  };
+  const getContact = async(req)=>{
+    const {userId} = req.query;
+    const user = await Contact.find({employeeId:userId}).sort({ createdAt: -1 });;
+    if(!user){
+      throw new Error('userId is required');
+    }
+    return user
+  };
   
   module.exports = {
     userCheckIn,
@@ -345,6 +381,8 @@ const userCheckIn = async (req) => {
     turnOffAlarm,
     autoTurnOffAlarm,
     createNotes,
-    getNotes
+    getNotes,
+    saveContact,
+    getContact
   };
   

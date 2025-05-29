@@ -38,11 +38,24 @@ const createNote = {
         description:Joi.string().required()
     })
 };
+const saveContact = {
+    body:Joi.object().keys({
+        contactNumber:Joi.string().required(),
+        contactName:Joi.string().required(),
+        contactNote:Joi.string().optional()
+    })
+};
 const getNote = {
     query:Joi.object().keys({
         userId:Joi.string().required(),
     })
-}
+};
+
+const getContact = {
+    query:Joi.object().keys({
+        userId:Joi.string().required(),
+    })
+};
 module.exports = {
     updateLocation,
     checkOut,
@@ -50,5 +63,7 @@ module.exports = {
     alarmOff,
     autoAlarmOff,
     createNote,
-    getNote
+    getNote,
+    saveContact,
+    getContact
 };

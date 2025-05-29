@@ -54,6 +54,14 @@ const getNote = catchAsync(async(req,res)=>{
     const noteList = await activityService.getNotes(req);
     res.status(httpStatus.OK).send({success:true,noteList});
 });
+const createContact = catchAsync(async(req,res)=>{
+    const contactData = await activityService.saveContact(req);
+    res.status(httpStatus.OK).send({success:true,contactData});
+});
+const getContact = catchAsync(async(req,res)=>{
+    const contactData = await activityService.getContact(req);
+    res.status(httpStatus.OK).send({success:true,contactData});
+});
 
 module.exports = {
     userCheckIn,
@@ -65,5 +73,7 @@ module.exports = {
     turnOffAlarm,
     autoTurnOffAlarm,
     createNote,
-    getNote
+    getNote,
+    createContact,
+    getContact
 };
