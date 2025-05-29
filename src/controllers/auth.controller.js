@@ -29,8 +29,8 @@ const login = catchAsync(async (req, res) => {
 });
 
 const logout = catchAsync(async (req, res) => {
-  await authService.logout(req);
-  res.status(httpStatus.OK).send({success: true});
+  const { message } = await authService.logout(req);
+  res.status(httpStatus.OK).send({success: true,message});
 });
 
 const loginViaPhoneNumber = catchAsync(async (req, res) => {
