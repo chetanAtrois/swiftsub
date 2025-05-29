@@ -13,10 +13,17 @@ const userCheckOut = catchAsync(async (req, res) => {
 });
 
 const trackerStatus = catchAsync(async (req, res) => {
-    const trackDetails = await activityService.trackerStatus(req);
-    res.status(httpStatus.OK).send({ success: true,trackDetails });
+  const trackDetails = await activityService.trackerStatus(req);
 
+  const { message, ...rest } = trackDetails;
+
+  res.status(httpStatus.OK).send({
+    success: true,
+    message,
+    trackDetails: rest
+  });
 });
+
 const updatedLocation = catchAsync(async (req, res) => {
     const updatedLocationData = await activityService.updateLocation(req);
     res.status(httpStatus.OK).send({ success: true, updatedLocationData });
