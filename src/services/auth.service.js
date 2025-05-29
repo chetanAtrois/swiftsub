@@ -78,8 +78,8 @@ const login = async (userBody) => {
   if (!isPasswordCorrect) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
-
   return user;
+
 };
 
 
@@ -132,10 +132,7 @@ const resetPassword = async (resetPasswordToken, userBody) => {
       tokenTypes.RESET_PASSWORD
     );
     console.log('Token Payload:', resetPasswordTokenDoc);
-
-
     const userType = resetPasswordTokenDoc.userType; 
-
     const user = await checkUserById(resetPasswordTokenDoc.user, userType);
     if (!user) {
       throw new Error(responseMessage.USER_NOT_FOUND);
@@ -253,36 +250,43 @@ const checkUserById = async (userId, role) => {
 
  const updateUser = async (requestBody) => {
   const { userId } = requestBody.query;
+  const { body } = requestBody;
 
-  const isUserExists = await User.findOne({ _id: userId });
-  if (!isUserExists) {
+  const user = await User.findOne({ _id: userId });
+  if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_FOUND);
-  };
-  if (requestBody.body.email) {
-    const emailTaken = await User.isEmailTaken(requestBody.body.email);
+  }
+
+  if (body.email && body.email !== user.email) {
+    const emailTaken = await User.isEmailTaken(body.email);
     if (emailTaken) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
     }
   }
-  if (requestBody.body.phoneNumber) {
-    const numberTaken = await User.isPhoneNumberTaken(requestBody.body.phoneNumber);
+
+  if (body.phoneNumber && body.phoneNumber !== user.phoneNumber) {
+    const numberTaken = await User.isPhoneNumberTaken(body.phoneNumber);
     if (numberTaken) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PHONE_NUMBER_ALREADY_TAKEN);
     }
   }
-  const updateData = {
-    ...requestBody.body,
-  };
-  const updatedUser = await User.findOneAndUpdate({
-    _id: userId
-  },
-    updateData,
-    {
-      new: true
-    });
+
+  Object.keys(body).forEach((key) => {
+    if (body[key] === '') {
+      delete body[key];
+    }
+  });
+
+  const updatedUser = await User.findOneAndUpdate(
+    { _id: userId },
+    { ...body },
+    { new: true }
+  );
+
   console.log('updatedUser', updatedUser);
   return { updatedUser };
 };
+
 
 const uploaderImage = (req, imageURI) => {
   const userId = req.user?._id;

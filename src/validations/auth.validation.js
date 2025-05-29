@@ -27,10 +27,10 @@ const updateUser = {
   }),
   body: Joi.object()
     .keys({
-      email: Joi.string().optional(),
+      email: Joi.string().email().allow(''),
       fullName: Joi.string().required(),
       companyName:Joi.string().optional(),
-      phoneNumber:Joi.string().optional(),
+      phoneNumber:Joi.string().required().allow(''),
     })
 };
 
