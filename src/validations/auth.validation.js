@@ -29,7 +29,7 @@ const updateUser = {
     .keys({
       email: Joi.string().email(),
       fullName: Joi.string().required(),
-      companyName:Joi.string().required(),
+      companyName:Joi.string().optional(),
       phoneNumber:Joi.string().required(),
     })
 };
