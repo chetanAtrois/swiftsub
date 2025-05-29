@@ -38,6 +38,14 @@ const autoTurnOffAlarm = catchAsync(async (req, res) => {
     const alarmoff = await activityService.autoTurnOffAlarm(req);
     res.status(httpStatus.OK).send({ success: true, alarmoff });
 });
+const createNote = catchAsync(async(req,res)=>{
+    const noteList = await activityService.createNotes(req);
+    res.status(httpStatus.OK).send({success:true,noteList});
+});
+const getNote = catchAsync(async(req,res)=>{
+    const noteList = await activityService.getNotes(req);
+    res.status(httpStatus.OK).send({success:true,noteList});
+});
 
 module.exports = {
     userCheckIn,
@@ -47,5 +55,7 @@ module.exports = {
     getUserLocation,
     getUserLocationHistory,
     turnOffAlarm,
-    autoTurnOffAlarm
+    autoTurnOffAlarm,
+    createNote,
+    getNote
 };

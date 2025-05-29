@@ -3,6 +3,7 @@ const Admin = require('../models/admin.model')
 const employeeActivityModel = require('../models/employeeActivity.model');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
+const Note = require('../models/note.model');
 
 const userCheckIn = async (req) => {
   const { checkInDate, checkInTime } = req.body;
@@ -96,7 +97,9 @@ const userCheckIn = async (req) => {
     const currentTime = new Date();
     const checkInTime = new Date(employeeDetails.checkInTime);
     const timeDiffInMilliseconds = currentTime - checkInTime;
-  
+    if (timeDiffInMilliseconds < 0) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Your check-in time is in the future. Please wait until check-in time.");
+    }
     const totalMinutes = Math.floor(timeDiffInMilliseconds / (1000 * 60));
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
@@ -296,8 +299,32 @@ const userCheckIn = async (req) => {
         }
       };
   };
-  
-  
+  const createNotes = async(req)=>{
+    const user = await User.findOne({
+      _id:req.user._id
+    })
+    const{title,description} = req.body;
+    console.log("userId",user);
+    
+    if(!user){
+      throw new Error('No user Found');
+    }
+    const noteSection = await Note.create({
+      employeeId:user._id,
+      title:req.body.title,
+      description:req.body.description
+    });
+    return noteSection;
+  };
+
+  const getNotes = async(req)=>{
+    const {userId} = req.query;
+    const user = await Note.find({employeeId:userId}).sort({ createdAt: -1 });
+    if(!user){
+      throw new Error('userId is required')
+    }
+    return user;
+  };
   
   module.exports = {
     userCheckIn,
@@ -307,6 +334,8 @@ const userCheckIn = async (req) => {
     getUserLocation,
     getLocationHistory,
     turnOffAlarm,
-    autoTurnOffAlarm
+    autoTurnOffAlarm,
+    createNotes,
+    getNotes
   };
   

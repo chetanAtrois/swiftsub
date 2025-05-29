@@ -32,10 +32,23 @@ const autoAlarmOff={
         activityId:Joi.string().required(),
     })
 };
+const createNote = {
+    body:Joi.object().keys({
+        title:Joi.string().required(),
+        description:Joi.string().required()
+    })
+};
+const getNote = {
+    query:Joi.object().keys({
+        userId:Joi.string().required(),
+    })
+}
 module.exports = {
     updateLocation,
     checkOut,
     getLocationHistory,
     alarmOff,
-    autoAlarmOff
+    autoAlarmOff,
+    createNote,
+    getNote
 };

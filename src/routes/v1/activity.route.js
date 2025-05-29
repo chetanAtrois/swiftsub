@@ -14,5 +14,7 @@ router.get('/getUserLocation',activityController.getUserLocation);
 router.get('/getLocationHistory',validate(activityValidation.getLocationHistory),activityController.getUserLocationHistory);
 router.post('/alarmOff',validate(activityValidation.alarmOff),activityController.turnOffAlarm);
 router.post('/autoAlarmOff',validate(activityValidation.autoAlarmOff),activityController.autoTurnOffAlarm);
+router.post('/createNote',auth(),validate(activityValidation.createNote),activityController.createNote);
+router.get('/getNote',validate(activityValidation.getNote),activityController.getNote);
 
 module.exports = router;
