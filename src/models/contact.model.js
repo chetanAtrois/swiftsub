@@ -17,6 +17,10 @@ const contactSchema = new mongoose.Schema({
         contactNote:{
             type:String,
             required:false
+        },
+        contactEmail:{
+            type:String,
+            required:false
         }
     }],
     createdAt: {

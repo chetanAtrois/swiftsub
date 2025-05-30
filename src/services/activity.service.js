@@ -347,9 +347,14 @@ const userCheckIn = async (req) => {
     const contactEntry = {
       contactName: req.body.contactName,
       contactNumber: req.body.contactNumber,
-      contactNote: req.body.contactNote
+      contactNote: req.body.contactNote,
+      contactEmail: req.body.contactEmail
     };
-  
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] === '') {
+        delete req.body[key];
+      }
+    });
     await Contact.findOneAndUpdate(
       { employeeId: user._id },
       {
@@ -357,11 +362,11 @@ const userCheckIn = async (req) => {
       },
       { upsert: true, new: true } 
     );
-  
     return {
       contactDetails: contactEntry
     };
   };
+
   const getContact = async(req)=>{
     const {userId} = req.query;
     const user = await Contact.find({employeeId:userId}).sort({ createdAt: -1 });;

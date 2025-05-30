@@ -42,7 +42,8 @@ const saveContact = {
     body:Joi.object().keys({
         contactNumber:Joi.string().required(),
         contactName:Joi.string().required(),
-        contactNote:Joi.string().optional()
+        contactNote:Joi.string().optional(),
+        contactEmail: Joi.string().email().allow(''),
     })
 };
 const getNote = {
