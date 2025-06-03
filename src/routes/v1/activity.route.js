@@ -18,5 +18,6 @@ router.post('/createNote',auth(),validate(activityValidation.createNote),activit
 router.get('/getNote',validate(activityValidation.getNote),activityController.getNote);
 router.post('/saveContact',auth(),validate(activityValidation.saveContact),activityController.createContact);
 router.get('/getContact',validate(activityValidation.getContact),activityController.getContact);
+router.get('/getLocationByDate',validate(activityValidation.getLocationByDate),activityController.getLocationHistoryByDate);
 
 module.exports = router;

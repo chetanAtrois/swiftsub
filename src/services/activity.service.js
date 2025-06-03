@@ -210,6 +210,51 @@ const userCheckIn = async (req) => {
       historyByDate: groupedByDate
     };
   };
+
+  const getLocationHistoryByDate = async (req) => {
+    const { userId, date } = req.query;
+  
+    if (!userId || !date) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "User ID and date are required");
+    }
+  
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid date format. Use yyyy-mm-dd");
+    }
+  
+    const user = await User.findById(userId).select("locationHistory");
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+  
+    const locationList = user.locationHistory.filter(loc => {
+      const locDate = new Date(loc.timestamp).toISOString().split("T")[0];
+      return locDate === date;
+    }).map(loc => ({
+      latitude: loc.coordinates[1],
+      longitude: loc.coordinates[0]
+    }));
+  
+    const timing = await employeeActivityModel.find({
+      employeeId: userId,
+      checkInTime: {
+        $gte: new Date(`${date}T00:00:00.000Z`),
+        $lte: new Date(`${date}T23:59:59.999Z`)
+      }
+    }).select('checkInTime checkOutTime createdAt updatedAt').sort({ checkInTime: -1 });
+  
+    return {
+      success: true,
+      locationHistoryData: {
+        userId,
+        date,
+        locations: locationList,
+        timing
+      }
+    };
+  };
+  
   
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;
@@ -388,6 +433,7 @@ const userCheckIn = async (req) => {
     createNotes,
     getNotes,
     saveContact,
-    getContact
+    getContact,
+    getLocationHistoryByDate
   };
   

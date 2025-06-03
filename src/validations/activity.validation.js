@@ -57,6 +57,12 @@ const getContact = {
         userId:Joi.string().required(),
     })
 };
+const getLocationByDate = {
+    query:Joi.object().keys({
+        userId:Joi.string().required(),
+        date:Joi.string().required()
+    })
+};
 module.exports = {
     updateLocation,
     checkOut,
@@ -66,5 +72,6 @@ module.exports = {
     createNote,
     getNote,
     saveContact,
-    getContact
+    getContact,
+    getLocationByDate
 };

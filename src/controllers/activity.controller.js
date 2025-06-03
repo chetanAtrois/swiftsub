@@ -62,6 +62,10 @@ const getContact = catchAsync(async(req,res)=>{
     const contactData = await activityService.getContact(req);
     res.status(httpStatus.OK).send({success:true,contactData});
 });
+const getLocationHistoryByDate = catchAsync(async(req,res)=>{
+    const data = await activityService.getLocationHistoryByDate(req);
+    res.status(httpStatus.OK).send({success:true,data});
+});
 
 module.exports = {
     userCheckIn,
@@ -75,5 +79,6 @@ module.exports = {
     createNote,
     getNote,
     createContact,
-    getContact
+    getContact,
+    getLocationHistoryByDate
 };
