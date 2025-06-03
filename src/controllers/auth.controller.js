@@ -136,6 +136,31 @@ const uploadUserProfileImage = catchAsync(async (req, res) => {
     },
   });
 });
+const uploadUserMedia = catchAsync(async (req, res) => {
+  const files = req.files || {};
+  const imageFile = files.image?.[0];
+  const audioFile = files.audio?.[0];
+
+  if ((imageFile && audioFile) || (!imageFile && !audioFile)) {
+    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Send only one file: image or audio.' });
+  }
+
+  const file = imageFile || audioFile;
+  const folder = imageFile ? 'chat/images' : 'chat/audios';
+  const fileType = imageFile ? 'image' : 'audio';
+
+  const uploadResult = await authService.uploadMedia(req,file, folder);
+
+  res.status(httpStatus.OK).send({
+    success: true,
+    message: `${fileType.charAt(0).toUpperCase() + fileType.slice(1)} uploaded successfully.`,
+    data: {
+      fileURL: uploadResult.fileURL,
+      fileType,
+      UserId:uploadResult.userId
+    },
+  });
+});
 
 
 
@@ -154,5 +179,6 @@ module.exports = {
   CompanyList,
   getUserProfile,
   updateUser,
-  uploadUserProfileImage
+  uploadUserProfileImage,
+  uploadUserMedia
 };

@@ -10,6 +10,7 @@ const Admin = require('../models/admin.model')
 const adminService = require('../services/admin.service');
 const Company = require('../models/company.model');
 const employeeActivityModel = require('../models/employeeActivity.model');
+const {uploadFile} = require('../config/upload-image');
 
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password } = userBody;
@@ -325,7 +326,6 @@ const checkUserById = async (userId, role) => {
   return { updatedUser };
 };
 
-
 const uploaderImage = (req, imageURI) => {
   const userId = req.user?._id;
   if (!userId) {
@@ -351,6 +351,26 @@ const uploadImage = async (req, imageURI) => {
   return updatedUser;
 };
 
+const uploadMedia = async (req,file, folder) => {
+  const user = await User.findOne({
+    _id: req.user._id
+  });
+  console.log("user",user)
+  if(!user){
+    throw new Error('no user Found')
+  }
+  const uploadResponse = await uploadFile(file, folder);
+
+  if (!uploadResponse?.success || !uploadResponse?.imageURI) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'File upload failed');
+  }
+
+  return {
+    userId:req.user._id,
+    fileURL: uploadResponse.imageURI,
+  };
+};
+
 
 module.exports = {
   register,
@@ -364,5 +384,6 @@ module.exports = {
   fetchCompanyList,
   getUserProfile,
   updateUser,
-  uploadImage
+  uploadImage,
+  uploadMedia
 };

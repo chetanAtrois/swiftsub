@@ -24,5 +24,14 @@ router.post(
     upload.fields([{ name: 'image', maxCount: 1 }]), 
     authController.uploadUserProfileImage 
   );
+  router.post(
+    '/uploadMedia',
+    auth(),  
+    upload.fields([
+      { name: 'image', maxCount: 1 },
+      { name: 'audio', maxCount: 1 }
+    ]),
+    authController.uploadUserMedia  
+  );
   
 module.exports = router;
