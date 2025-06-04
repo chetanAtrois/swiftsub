@@ -243,18 +243,17 @@ const userCheckIn = async (req) => {
         $lte: new Date(`${date}T23:59:59.999Z`)
       }
     }).select('checkInTime checkOutTime createdAt updatedAt').sort({ checkInTime: -1 });
-  
     return {
       success: true,
+      userId,
       locationHistoryData: {
-        userId,
-        date,
+        [date]:{
         locations: locationList,
         timing
+        }
       }
     };
   };
-  
   
   const getUserLocation = async (req) => {
     const { userId, date } = req.query;
