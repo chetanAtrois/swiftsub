@@ -29,7 +29,8 @@ router.post(
     auth(),  
     upload.fields([
       { name: 'image', maxCount: 1 },
-      { name: 'audio', maxCount: 1 }
+      { name: 'audio', maxCount: 1 },
+      { name: 'file', maxCount: 1 },
     ]),
     authController.uploadUserMedia  
   );

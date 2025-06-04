@@ -371,7 +371,6 @@ const uploadMedia = async (req,file, folder) => {
   };
 };
 
-
 module.exports = {
   register,
   login,

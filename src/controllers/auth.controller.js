@@ -140,16 +140,27 @@ const uploadUserMedia = catchAsync(async (req, res) => {
   const files = req.files || {};
   const imageFile = files.image?.[0];
   const audioFile = files.audio?.[0];
+  const otherFile = files.file?.[0]; 
 
-  if ((imageFile && audioFile) || (!imageFile && !audioFile)) {
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Send only one file: image or audio.' });
+  const fileCount = [imageFile, audioFile, otherFile].filter(Boolean).length;
+  console.log("counter",fileCount);
+  if (fileCount !== 1) {
+    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Send only one file: image, audio, or other file (e.g., PDF).' });
   }
 
-  const file = imageFile || audioFile;
-  const folder = imageFile ? 'chat/images' : 'chat/audios';
-  const fileType = imageFile ? 'image' : 'audio';
+  const file = imageFile || audioFile || otherFile;
+  const folder = imageFile
+    ? 'chat/images'
+    : audioFile
+    ? 'chat/audios'
+    : 'chat/files';
+  const fileType = imageFile
+    ? 'image'
+    : audioFile
+    ? 'audio'
+    : 'file';
 
-  const uploadResult = await authService.uploadMedia(req,file, folder);
+  const uploadResult = await authService.uploadMedia(req, file, folder);
 
   res.status(httpStatus.OK).send({
     success: true,
@@ -157,11 +168,10 @@ const uploadUserMedia = catchAsync(async (req, res) => {
     data: {
       fileURL: uploadResult.fileURL,
       fileType,
-      UserId:uploadResult.userId
+      UserId: uploadResult.userId,
     },
   });
 });
-
 
 
 module.exports = {
