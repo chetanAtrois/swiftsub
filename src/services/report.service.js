@@ -15,6 +15,7 @@ const mapReportData = (req, data, imageURIs, fileData) => {
 
   const report = {
     userId: userId,
+    title:data.body.title,
     companyName: data.body.companyName,
     address: data.body.address,
     reportDate: data.body.reportDate,
