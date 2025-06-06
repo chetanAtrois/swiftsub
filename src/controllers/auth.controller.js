@@ -97,10 +97,12 @@ const changePassword = catchAsync(async (req, res) => {
   };
   res.status(httpStatus.OK).send({ success: true, userData });
 });
+
 const CompanyList = catchAsync(async (req, res) => {
   const companyList = await authService.fetchCompanyList(req);
   res.status(httpStatus.OK).send({ success: true, companyList });
 });
+
 const getUserProfile = catchAsync(async(req,res)=>{
   const userList = await authService.getUserProfile(req);
   res.status(httpStatus.OK).send({success:true,userList});
@@ -172,6 +174,10 @@ const uploadUserMedia = catchAsync(async (req, res) => {
     },
   });
 });
+const getUserByPhoneNumber = catchAsync(async (req, res) => {
+  const user = await authService.getUserByPhoneNumber(req);
+  res.status(httpStatus.OK).send({ success: true, user });
+});
 
 
 module.exports = {
@@ -190,5 +196,6 @@ module.exports = {
   getUserProfile,
   updateUser,
   uploadUserProfileImage,
-  uploadUserMedia
+  uploadUserMedia,
+  getUserByPhoneNumber
 };

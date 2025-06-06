@@ -11,6 +11,7 @@ const adminService = require('../services/admin.service');
 const Company = require('../models/company.model');
 const employeeActivityModel = require('../models/employeeActivity.model');
 const {uploadFile} = require('../config/upload-image');
+const subAdmin = require('../models/subAdmin.model');
 
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password } = userBody;
@@ -96,6 +97,20 @@ const loginUserWithPhoneNumber = async (userBody) => {
   }
 
   return users;
+};
+
+const getUserByPhoneNumber = async (req) => {
+  const userExist = await User.findOne({
+    _id:req.user._id
+  })
+  if(!userExist){
+    throw new Error('User does not exist')
+  }
+  const {phoneNumber} = req.query;
+  let user = await User.findOne({phoneNumber:phoneNumber});
+  if(!user){
+  user = await subAdmin.findOne({phoneNumber:phoneNumber})}
+    return user;
 };
 
 const logout = async (req) => {
@@ -384,5 +399,6 @@ module.exports = {
   getUserProfile,
   updateUser,
   uploadImage,
-  uploadMedia
+  uploadMedia,
+  getUserByPhoneNumber
 };

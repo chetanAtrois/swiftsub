@@ -59,6 +59,11 @@ const loginViaPhoneNumber = {
     userType: Joi.string().required(),
   }),
 };
+const getUserByPhoneNumber = {
+  query: Joi.object().keys({
+    phoneNumber: Joi.string().required()
+  }),
+}
 
 const logout = {
   body: Joi.object().keys({
@@ -138,5 +143,6 @@ module.exports = {
   loginViaPhoneNumber,
   fetchCompanyList,
   getUserProfile,
-  updateUser
+  updateUser,
+  getUserByPhoneNumber
 };
