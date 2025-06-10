@@ -1,19 +1,19 @@
 const express = require('express');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });  
-const reportController = require('../../controllers/report.controller');  
+const taskController = require('../../controllers/task.controller');  
 const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-router.post('/createReport', 
+router.post('/createTask', 
     auth(), 
     upload.fields([
-      { name: 'images', maxCount: 5 },   
       { name: 'file', maxCount: 1 }      
     ]), 
-    reportController.createReport
+    taskController.createTask
 );
-router.get('/getReport', reportController.getReports);
-router.delete('/deleteReport', reportController.deleteReport);
+router.get('/getTask', taskController.getTask);
+router.put('/deleteTask', taskController.deleteTask);
+router.get('/getDeletedTask',taskController.getDeletedTask);
 module.exports = router;
