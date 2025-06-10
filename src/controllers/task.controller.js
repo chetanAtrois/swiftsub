@@ -36,6 +36,10 @@ const getTask = catchAsync(async (req, res) => {
   const tasktList = await taskService.getTaskByUser(req);
   res.status(httpStatus.OK).send({ success: true, tasktList });
 });
+const getTaskByDate = catchAsync(async (req, res) => {
+  const tasktList = await taskService.getTaskByDate(req);
+  res.status(httpStatus.OK).send({ success: true, tasktList });
+});
 
 const deleteTask = catchAsync(async(req,res)=>{
   const deleteTask = await taskService.deleteTask(req);
@@ -46,10 +50,17 @@ const getDeletedTask = catchAsync(async (req, res) => {
   const tasktList = await taskService.getDeletedTaskByUser(req);
   res.status(httpStatus.OK).send({ success: true, tasktList });
 });
+const getDeletedTaskByDate = catchAsync(async (req, res) => {
+  const tasktList = await taskService.getDeletedTaskByDate(req);
+  res.status(httpStatus.OK).send({ success: true, tasktList });
+});
+
 
 module.exports = {
     createTask,
     getTask,
     deleteTask,
-    getDeletedTask
+    getDeletedTask,
+    getTaskByDate,
+    getDeletedTaskByDate
 };

@@ -3,6 +3,9 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });  
 const taskController = require('../../controllers/task.controller');  
 const auth = require('../../middlewares/auth');
+const validate = require('../../middlewares/validate');
+const taskValidation = require('../../validations/task.validation');
+
 
 const router = express.Router();
 
@@ -13,7 +16,10 @@ router.post('/createTask',
     ]), 
     taskController.createTask
 );
-router.get('/getTask', taskController.getTask);
-router.put('/deleteTask', taskController.deleteTask);
-router.get('/getDeletedTask',taskController.getDeletedTask);
+router.get('/getTask', validate(taskValidation.getTaskByUser),taskController.getTask);
+router.get('/getTaskByDate', validate(taskValidation.getTaskByDate),taskController.getTaskByDate);
+router.put('/deleteTask', validate(taskValidation.deleteTask),taskController.deleteTask);
+router.get('/getDeletedTask',validate(taskValidation.getDeletedTaskByUser),taskController.getDeletedTask);
+router.get('/getDeletedTaskByDate',validate(taskValidation.getDeletedTaskByDate),taskController.getDeletedTaskByDate);
+
 module.exports = router;
