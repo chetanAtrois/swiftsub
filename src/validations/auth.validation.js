@@ -146,5 +146,4 @@ module.exports = {
   getUserProfile,
   updateUser,
   getUserByPhoneNumber,
-  getUserById
 };
