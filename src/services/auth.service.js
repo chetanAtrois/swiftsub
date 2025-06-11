@@ -118,21 +118,20 @@ const getUsersById = async (req) => {
     throw new Error('User does not exist');
   }
 
-  const ids = Object.keys(req.query)
-    .filter(key => key.startsWith('id'))
-    .map(key => req.query[key].trim());
+  const id = req.body.id;
 
-  if (ids.length === 0) {
-    throw new Error('No user IDs provided');
+  if (!Array.isArray(id) || id.length === 0) {
+    throw new Error('Please provide a valid array of user IDs in the body.');
   }
 
-  const usersFromUser = await User.find({ _id: { $in: ids } });
-  const usersFromSubAdmin = await subAdmin.find({ _id: { $in: ids } });
+  const usersFromUser = await User.find({ _id: { $in: id } });
+  const usersFromSubAdmin = await subAdmin.find({ _id: { $in: id } });
 
   const allUsers = [...usersFromUser, ...usersFromSubAdmin];
 
   return allUsers;
 };
+
 
 
 const logout = async (req) => {
