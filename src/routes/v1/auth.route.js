@@ -35,6 +35,6 @@ router.post(
     authController.uploadUserMedia  
   );
 router.get('/getUserByPhoneNumber',auth(),validate(authValidation.getUserByPhoneNumber),authController.getUserByPhoneNumber);
-router.get('/getUserById',auth(),authController.getUserById);
+router.post('/getUserById',auth(),authController.getUserById);
 
 module.exports = router;
