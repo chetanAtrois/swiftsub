@@ -112,6 +112,28 @@ const getUserByPhoneNumber = async (req) => {
   user = await subAdmin.findOne({phoneNumber:phoneNumber})}
     return user;
 };
+const getUsersById = async (req) => {
+  const userExist = await User.findOne({ _id: req.user._id });
+  if (!userExist) {
+    throw new Error('User does not exist');
+  }
+
+  const ids = Object.keys(req.query)
+    .filter(key => key.startsWith('id'))
+    .map(key => req.query[key].trim());
+
+  if (ids.length === 0) {
+    throw new Error('No user IDs provided');
+  }
+
+  const usersFromUser = await User.find({ _id: { $in: ids } });
+  const usersFromSubAdmin = await subAdmin.find({ _id: { $in: ids } });
+
+  const allUsers = [...usersFromUser, ...usersFromSubAdmin];
+
+  return allUsers;
+};
+
 
 const logout = async (req) => {
   const { refreshToken } = req.body;
@@ -400,5 +422,6 @@ module.exports = {
   updateUser,
   uploadImage,
   uploadMedia,
-  getUserByPhoneNumber
+  getUserByPhoneNumber,
+  getUsersById
 };
