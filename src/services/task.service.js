@@ -15,6 +15,7 @@ const mapReportData = (req, data, fileData) => {
     taskDate: data.body.taskDate,
     startWorkingHour: data.body.startWorkingHour,
     endWorkingHour: data.body.endWorkingHour,
+    durationOfTask:data.body.durationOfTask,
     status: 'active',
     file: {
       type: fileData.type,

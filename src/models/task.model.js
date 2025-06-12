@@ -26,6 +26,10 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  durationOfTask:{
+    type: String,
+    required: false,
+  },
 
   file: {
     type: {
