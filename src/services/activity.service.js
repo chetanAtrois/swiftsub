@@ -5,6 +5,7 @@ const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
 const Note = require('../models/note.model');
 const Contact = require('../models/contact.model');
+const AllowedCheckinPolicy = require('../models/allowedCheckinPolicy.model')
 
 const userCheckIn = async (req) => {
   const { checkInDate, checkInTime } = req.body;
@@ -419,6 +420,25 @@ const userCheckIn = async (req) => {
     }
     return user
   };
+
+  const getCheckinPolicyTime = async (req) => {
+    const { date,userId } = req.query;
+  
+    if (!userId || !date) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'please give UserId and date');
+    }
+  
+    const policy = await AllowedCheckinPolicy.findOne({ userId, date });
+    if (!policy) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No checkinTime found with this date');
+    }
+  
+    return ({
+      allowedCheckInTime: policy.allowedCheckInTime,
+      date: policy.date
+    });
+  };
+  
   
   module.exports = {
     userCheckIn,
@@ -433,6 +453,7 @@ const userCheckIn = async (req) => {
     getNotes,
     saveContact,
     getContact,
-    getLocationHistoryByDate
+    getLocationHistoryByDate,
+    getCheckinPolicyTime
   };
   

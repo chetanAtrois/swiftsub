@@ -30,8 +30,7 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-
-  file: {
+    file: {
     type: {
       type: String,
       required: false,
@@ -43,7 +42,7 @@ const taskSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'pending', 'deleted','completed'],
+    enum: ['active', 'pending', 'deleted', 'completed'],
     required: false,
   },
   createdAt: {

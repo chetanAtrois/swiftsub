@@ -19,5 +19,6 @@ router.get('/getNote',validate(activityValidation.getNote),activityController.ge
 router.post('/saveContact',auth(),validate(activityValidation.saveContact),activityController.createContact);
 router.get('/getContact',validate(activityValidation.getContact),activityController.getContact);
 router.get('/getLocationByDate',validate(activityValidation.getLocationByDate),activityController.getLocationHistoryByDate);
+router.get('/getCheckinPolicyTime',validate(activityValidation.getCheckinPolicyTime),activityController.getCheckinPolicyTime);
 
 module.exports = router;

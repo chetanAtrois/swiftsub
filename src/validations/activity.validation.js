@@ -63,6 +63,12 @@ const getLocationByDate = {
         date:Joi.string().required()
     })
 };
+const getCheckinPolicyTime = {
+    query:Joi.object().keys({
+        userId:Joi.string().required(),
+        date:Joi.string().required()
+    })
+};
 module.exports = {
     updateLocation,
     checkOut,
@@ -73,5 +79,6 @@ module.exports = {
     getNote,
     saveContact,
     getContact,
-    getLocationByDate
+    getLocationByDate,
+    getCheckinPolicyTime
 };

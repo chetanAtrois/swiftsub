@@ -13,15 +13,15 @@ const userCheckOut = catchAsync(async (req, res) => {
 });
 
 const trackerStatus = catchAsync(async (req, res) => {
-  const trackDetails = await activityService.trackerStatus(req);
+    const trackDetails = await activityService.trackerStatus(req);
 
-  const { message, ...rest } = trackDetails;
+    const { message, ...rest } = trackDetails;
 
-  res.status(httpStatus.OK).send({
-    success: true,
-    message,
-    trackDetails: rest
-  });
+    res.status(httpStatus.OK).send({
+        success: true,
+        message,
+        trackDetails: rest
+    });
 });
 
 const updatedLocation = catchAsync(async (req, res) => {
@@ -46,25 +46,29 @@ const autoTurnOffAlarm = catchAsync(async (req, res) => {
     const alarmoff = await activityService.autoTurnOffAlarm(req);
     res.status(httpStatus.OK).send({ success: true, alarmoff });
 });
-const createNote = catchAsync(async(req,res)=>{
+const createNote = catchAsync(async (req, res) => {
     const noteList = await activityService.createNotes(req);
-    res.status(httpStatus.OK).send({success:true,noteList});
+    res.status(httpStatus.OK).send({ success: true, noteList });
 });
-const getNote = catchAsync(async(req,res)=>{
+const getNote = catchAsync(async (req, res) => {
     const noteList = await activityService.getNotes(req);
-    res.status(httpStatus.OK).send({success:true,noteList});
+    res.status(httpStatus.OK).send({ success: true, noteList });
 });
-const createContact = catchAsync(async(req,res)=>{
+const createContact = catchAsync(async (req, res) => {
     const contactData = await activityService.saveContact(req);
-    res.status(httpStatus.OK).send({success:true,contactData});
+    res.status(httpStatus.OK).send({ success: true, contactData });
 });
-const getContact = catchAsync(async(req,res)=>{
+const getContact = catchAsync(async (req, res) => {
     const contactData = await activityService.getContact(req);
-    res.status(httpStatus.OK).send({success:true,contactData});
+    res.status(httpStatus.OK).send({ success: true, contactData });
 });
-const getLocationHistoryByDate = catchAsync(async(req,res)=>{
+const getLocationHistoryByDate = catchAsync(async (req, res) => {
     const data = await activityService.getLocationHistoryByDate(req);
-    res.status(httpStatus.OK).send({success:true,data});
+    res.status(httpStatus.OK).send({ success: true, data });
+});
+const getCheckinPolicyTime = catchAsync(async (req, res) => {
+    const checkinData = await activityService.getCheckinPolicyTime(req);
+    res.status(httpStatus.OK).send({ success: true, checkinData });
 });
 
 module.exports = {
@@ -80,5 +84,6 @@ module.exports = {
     getNote,
     createContact,
     getContact,
-    getLocationHistoryByDate
+    getLocationHistoryByDate,
+    getCheckinPolicyTime
 };
