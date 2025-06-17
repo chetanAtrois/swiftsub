@@ -70,6 +70,10 @@ const getCheckinPolicyTime = catchAsync(async (req, res) => {
     const checkinData = await activityService.getCheckinPolicyTime(req);
     res.status(httpStatus.OK).send({ success: true, checkinData });
 });
+const saveContactAfterCall = catchAsync(async (req, res) => {
+    const contactData = await activityService.saveContactAfterCall(req);
+    res.status(httpStatus.OK).send({ success: true, contactData });
+});
 
 module.exports = {
     userCheckIn,
@@ -85,5 +89,6 @@ module.exports = {
     createContact,
     getContact,
     getLocationHistoryByDate,
-    getCheckinPolicyTime
+    getCheckinPolicyTime,
+    saveContactAfterCall
 };
