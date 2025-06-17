@@ -78,10 +78,6 @@ const deleteTask = async (req) => {
     { status: 'deleted', deletedAt: new Date() },
     { new: true }
   );
-  if (task.status === 'deleted') {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Task already deleted');
-  }
-
   if (!task) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
   }

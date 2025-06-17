@@ -18,6 +18,8 @@ router.post('/logout',auth(),validate(authValidation.logout),authController.logo
 router.get('/companyList',validate(authValidation.fetchCompanyList),authController.CompanyList);
 router.get('/getUserProfile',validate(authValidation.getUserProfile),authController.getUserProfile);
 router.put('/updateUser',validate(authValidation.updateUser),authController.updateUser);
+router.put('/setPosition',auth(),validate(authValidation.setPosition),authController.setPosition);
+
 router.post(
     '/uploadProfileImage',
     auth(), 

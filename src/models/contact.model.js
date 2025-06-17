@@ -8,11 +8,11 @@ const contactSchema = new mongoose.Schema({
     contactDetails:[{
         contactName:{
             type:String,
-            required:true
+            required:false
         },
         contactNumber:{
             type:String,
-            required:true
+            required:false
         },
         contactNote:{
             type:String,

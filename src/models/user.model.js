@@ -56,7 +56,10 @@ const userSchema = mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
-    
+    companyPosition:{
+      type:String,
+      required:false
+    },
     method: {
       type: String,
       enum: ['google'],

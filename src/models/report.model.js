@@ -6,6 +6,20 @@ const reportSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    required: true
+  },
+  isCompleted: {
+    type: Boolean,
+    default: true,
+  },
   title:{
     type: String,
     required: true,
@@ -57,6 +71,10 @@ const reportSchema = new mongoose.Schema({
       required: true,
     },
   ],
+  customFields: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
 
   businessSize: {
     type: String,

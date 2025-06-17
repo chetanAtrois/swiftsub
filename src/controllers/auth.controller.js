@@ -182,6 +182,10 @@ const getUserById = catchAsync(async (req, res) => {
   const user = await authService.getUsersById(req);
   res.status(httpStatus.OK).send({ success: true, user });
 });
+const setPosition = catchAsync(async (req, res) => {
+  const user = await authService.setPosition(req);
+  res.status(httpStatus.OK).send({ success: true, user });
+});
 
 
 module.exports = {
@@ -202,5 +206,6 @@ module.exports = {
   uploadUserProfileImage,
   uploadUserMedia,
   getUserByPhoneNumber,
-  getUserById
+  getUserById,
+  setPosition
 };

@@ -53,6 +53,80 @@ const getReportsByUser = async (userId) => {
   const reports = await Report.find({ userId }).sort({ createdAt: -1 });
   return reports;
 };
+const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
+  const userId = req.user._id;
+  if (!imageURIs.length || imageURIs.length > 5) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'You must upload between 1 to 5 images.');
+  }
+
+  if (!fileData || !fileData.url) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Report file is required.');
+  }
+
+  const knownFields = [
+    'title',
+    'companyName',
+    'address',
+    'reportDate',
+    'reportTime',
+    'notes',
+    'businessSize',
+    'images',
+    'file',
+  ];
+
+  const updates = {};
+  const customFields = {};
+
+  for (const key in body) {
+    if (knownFields.includes(key)) {
+      updates[key] = body[key];
+    } else {
+      customFields[key] = body[key];
+    }
+  }
+
+  if (imageURIs) {
+    updates.images = imageURIs;
+  }
+  if (fileData) {
+    updates.file = fileData;
+  }
+
+  updates.customFields = customFields;
+
+  return updates;
+};
+
+const updateReport = async (req) => {
+  const { reportId } = req.query;
+  console.log("reporrtId",reportId);
+  console.log("reportIdUserId",reportId.userId);
+  const report = await Report.findById(reportId);
+if (!report) {
+  throw new ApiError(404, 'Report not found');
+}
+
+// Step 2: Check permission
+if (report.userId.toString() !== req.user._id.toString()) {
+  throw new ApiError(403, 'You are not allowed to edit this report');
+}
+  const updates = mapUpdatedReportData(req, req.body, req.imageURIs, req.fileData);
+  updates.updatedBy = req.user._id;
+  
+  const updatedReport = await Report.findByIdAndUpdate(
+    reportId,
+    { $set: updates },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedReport) {
+    throw new ApiError(404, 'Report not found');
+  }
+
+  return { data: updatedReport };
+};
+
 
 const deleteReport = async(req)=>{
   const {reportId} = req.query;
@@ -66,5 +140,6 @@ const deleteReport = async(req)=>{
 module.exports = {
   createReport,
   getReportsByUser,
-  deleteReport
+  deleteReport,
+  updateReport
 };

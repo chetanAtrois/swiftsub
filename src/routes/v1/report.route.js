@@ -16,4 +16,9 @@ router.post('/createReport',
 );
 router.get('/getReport', reportController.getReports);
 router.delete('/deleteReport', reportController.deleteReport);
+router.put('/updateReport',auth(),upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'images', maxCount: 5 },
+]),
+reportController.updateReport);
 module.exports = router;

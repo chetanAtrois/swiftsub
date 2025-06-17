@@ -406,6 +406,19 @@ const uploadMedia = async (req,file, folder) => {
     fileURL: uploadResponse.imageURI,
   };
 };
+const setPosition = async (req) => {
+  const userId = req.user._id;
+  const { position } = req.body;
+
+  const updatedPosition = await User.findByIdAndUpdate(
+    userId,
+    { companyPosition: position },
+    { new: true, runValidators: true }
+  );
+
+  return updatedPosition;
+};
+
 
 module.exports = {
   register,
@@ -422,5 +435,6 @@ module.exports = {
   uploadImage,
   uploadMedia,
   getUserByPhoneNumber,
-  getUsersById
+  getUsersById,
+  setPosition
 };
