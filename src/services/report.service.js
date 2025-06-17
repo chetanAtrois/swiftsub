@@ -113,6 +113,7 @@ if (report.userId.toString() !== req.user._id.toString()) {
 }
   const updates = mapUpdatedReportData(req, req.body, req.imageURIs, req.fileData);
   updates.updatedBy = req.user._id;
+  updates.isCompleted = true; 
   
   const updatedReport = await Report.findByIdAndUpdate(
     reportId,
