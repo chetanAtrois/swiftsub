@@ -6,6 +6,7 @@ const User = require('../models/user.model');
 const Note = require('../models/note.model');
 const Contact = require('../models/contact.model');
 const AllowedCheckinPolicy = require('../models/allowedCheckinPolicy.model')
+const saveContactAfterCallModel = require('../models/saveContactAfterCall.model');
 
 const userCheckIn = async (req) => {
   const { checkInDate, checkInTime } = req.body;
@@ -411,6 +412,41 @@ const userCheckIn = async (req) => {
       contactDetails: contactEntry
     };
   };
+  const saveContactAfterCall = async (req) => {
+    const user = await User.findOne({
+      _id:req.user._id
+    })
+    console.log("userId",user);
+  
+    if (!user) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
+    }
+  
+    const contactEntry = {
+      contactName: req.body.contactName,
+      contactNumber: req.body.contactNumber,
+      contactNote: req.body.contactNote,
+      contactEmail: req.body.contactEmail,
+      contactCompanyName: req.body.contactCompanyName,
+      contactProfile: req.body.contactProfile,
+      purpose: req.body.purpose,
+    };
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] === '') {
+        delete req.body[key];
+      }
+    });
+    await saveContactAfterCallModel.findOneAndUpdate(
+      { employeeId: user._id },
+      {
+        $push: { contactDetails: contactEntry }
+      },
+      { upsert: true, new: true } 
+    );
+    return {
+      contactDetails: contactEntry
+    };
+  };
 
   const getContact = async(req)=>{
     const {userId} = req.query;
@@ -456,6 +492,7 @@ const userCheckIn = async (req) => {
     saveContact,
     getContact,
     getLocationHistoryByDate,
-    getCheckinPolicyTime
+    getCheckinPolicyTime,
+    saveContactAfterCall
   };
   

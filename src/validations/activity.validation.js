@@ -46,6 +46,17 @@ const saveContact = {
         contactEmail: Joi.string().email().allow(''),
     })
 };
+const saveContactAfterCall = {
+    body:Joi.object().keys({
+        contactNumber:Joi.string().required(),
+        contactName:Joi.string().required(),
+        contactNote:Joi.string().optional(),
+        contactEmail: Joi.string().email().allow(''),
+        purpose:Joi.string().optional(),
+        contactProfile:Joi.string().required(),
+        companyName:Joi.string().required()
+    })
+};
 const getNote = {
     query:Joi.object().keys({
         userId:Joi.string().required(),
@@ -80,5 +91,6 @@ module.exports = {
     saveContact,
     getContact,
     getLocationByDate,
-    getCheckinPolicyTime
+    getCheckinPolicyTime,
+    saveContactAfterCall
 };
