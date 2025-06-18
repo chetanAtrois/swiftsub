@@ -484,6 +484,16 @@ const userCheckIn = async (req) => {
     }
     return userPermission;
   };
+
+  const getMyContacts = async (req) => {
+    const employeeId = req.user._id;
+    const getContact = await saveContactAfterCallModel.findOne({ employeeId }).select('contactDetails');
+    if (!getContact) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No contact found for this user');
+    }
+    return getContact;
+  };
+
   
   module.exports = {
     userCheckIn,
@@ -501,6 +511,7 @@ const userCheckIn = async (req) => {
     getLocationHistoryByDate,
     getCheckinPolicyTime,
     saveContactAfterCall,
-    getMyPermissions
+    getMyPermissions,
+    getMyContacts
   };
   

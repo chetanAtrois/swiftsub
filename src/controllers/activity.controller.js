@@ -78,6 +78,10 @@ const getMyPermissions = catchAsync(async (req, res) => {
     const permissions = await activityService.getMyPermissions(req);
     res.status(httpStatus.OK).send({ success: true, permissions });
 });
+const getMyContacts = catchAsync(async (req, res) => {
+    const contactList = await activityService.getMyContacts(req);
+    res.status(httpStatus.OK).send({ success: true, contactList });
+});
 
 module.exports = {
     userCheckIn,
@@ -95,5 +99,6 @@ module.exports = {
     getLocationHistoryByDate,
     getCheckinPolicyTime,
     saveContactAfterCall,
-    getMyPermissions
+    getMyPermissions,
+    getMyContacts
 };
