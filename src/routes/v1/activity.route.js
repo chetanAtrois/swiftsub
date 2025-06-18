@@ -21,5 +21,7 @@ router.get('/getContact',validate(activityValidation.getContact),activityControl
 router.get('/getLocationByDate',validate(activityValidation.getLocationByDate),activityController.getLocationHistoryByDate);
 router.get('/getCheckinPolicyTime',validate(activityValidation.getCheckinPolicyTime),activityController.getCheckinPolicyTime);
 router.post('/saveContactAfterCall',auth(),activityController.saveContactAfterCall);
+router.get('/getMyPermissions',auth(),activityController.getMyPermissions);
+
 
 module.exports = router;

@@ -7,6 +7,7 @@ const Note = require('../models/note.model');
 const Contact = require('../models/contact.model');
 const AllowedCheckinPolicy = require('../models/allowedCheckinPolicy.model')
 const saveContactAfterCallModel = require('../models/saveContactAfterCall.model');
+const Permission = require('../models/permission.model');
 
 const userCheckIn = async (req) => {
   const { checkInDate, checkInTime } = req.body;
@@ -475,8 +476,14 @@ const userCheckIn = async (req) => {
     });
   };
 
-
-  
+  const getMyPermissions = async (req) => {
+    const userId = req.user._id;
+    const userPermission = await Permission.findOne({ userId }).select('permissions');
+    if (!userPermission) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No permissions found for this user');
+    }
+    return userPermission;
+  };
   
   module.exports = {
     userCheckIn,
@@ -493,6 +500,7 @@ const userCheckIn = async (req) => {
     getContact,
     getLocationHistoryByDate,
     getCheckinPolicyTime,
-    saveContactAfterCall
+    saveContactAfterCall,
+    getMyPermissions
   };
   
