@@ -25,6 +25,7 @@ const getLocationHistory={
 const alarmOff={
     body:Joi.object().keys({
         activityId:Joi.string().required(),
+        passcode:Joi.string().required(),
     })
 };
 const autoAlarmOff={

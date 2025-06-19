@@ -294,13 +294,18 @@ const userCheckIn = async (req) => {
   };
 
   const turnOffAlarm = async (req) => {
-    const { activityId } = req.body;
+    const { activityId, passcode } = req.body;
   
     if (!activityId) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Activity ID is required');
     }
   
     const currentTime = new Date();
+    const predefinedPasscode = '6666'; 
+  
+    if (passcode !== predefinedPasscode) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Passcode does not match');
+    }
   
     await employeeActivityModel.updateOne(
       { _id: activityId },
@@ -313,6 +318,7 @@ const userCheckIn = async (req) => {
         }
       }
     );
+  
     return {
       success: true,
       message: "Alarm turned off successfully",
@@ -322,6 +328,7 @@ const userCheckIn = async (req) => {
       }
     };
   };
+  
   
   const autoTurnOffAlarm = async (req) => {
       const { activityId } = req.body;
