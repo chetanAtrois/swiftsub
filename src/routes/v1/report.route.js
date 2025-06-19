@@ -21,4 +21,6 @@ router.put('/updateReport',auth(),upload.fields([
   { name: 'images', maxCount: 5 },
 ]),
 reportController.updateReport);
+router.put('/updateCompanyName',auth(), reportController.updateCompanyName);
+
 module.exports = router;

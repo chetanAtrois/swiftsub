@@ -53,6 +53,10 @@ const deleteReport = catchAsync(async(req,res)=>{
   const deletedReport = await reportService.deleteReport(req);
   res.status(httpStatus.OK).send({success:true,deletedReport});
 });
+const updateCompanyName = catchAsync(async(req,res)=>{
+  const deletedReport = await reportService.updateCompanyName(req);
+  res.status(httpStatus.OK).send({success:true,deletedReport});
+});
 
 const updateReport = catchAsync(async (req, res) => {
   const files = req.files || {};
@@ -108,5 +112,6 @@ module.exports = {
   createReport,
   getReports,
   deleteReport,
-  updateReport
+  updateReport,
+  updateCompanyName
 };

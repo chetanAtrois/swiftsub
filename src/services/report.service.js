@@ -146,6 +146,31 @@ const updateReport = async (req) => {
   return { data: updatedReport };
 };
 
+const updateCompanyName = async (req) => {
+  const { reportId } = req.query;
+  const { companyName } = req.body;
+
+  if (!reportId || !companyName) {
+    throw new ApiError(400, 'reportId and companyName are required');
+  }
+
+  const report = await Report.findById(reportId);
+  if (!report) {
+    throw new ApiError(404, 'Report not found');
+  }
+
+  if (report.userId.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, 'You are not allowed to update this report');
+  }
+
+  const updatedReport = await Report.findByIdAndUpdate(
+    reportId,
+    { $set: { companyName, updatedBy: req.user._id } },
+    { new: true, runValidators: true }
+  );
+
+  return { data: updatedReport };
+};
 
 
 const deleteReport = async(req)=>{
@@ -157,9 +182,11 @@ const deleteReport = async(req)=>{
   return report;
 };
 
+
 module.exports = {
   createReport,
   getReportsByUser,
   deleteReport,
-  updateReport
+  updateReport,
+  updateCompanyName
 };
