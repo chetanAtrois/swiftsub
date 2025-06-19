@@ -13,7 +13,11 @@ const allowedCheckinPolicySchema = new mongoose.Schema({
   allowedCheckInTime: {
     type: String, 
     required: true
-  }
+  },allowedCheckOutTime: {
+    type: String, 
+    required: true
+  },
+
 }, {
   timestamps: true
 });

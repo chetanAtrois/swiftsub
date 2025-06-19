@@ -477,11 +477,14 @@ const userCheckIn = async (req) => {
   
     const policy = await AllowedCheckinPolicy.findOne({ userId, date });
     if (!policy) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'No checkinTime found with this date');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No checkinTime and checkOutTime found with this date');
     }
+    console.log("policy document:", policy);
+
   
     return ({
       allowedCheckInTime: policy.allowedCheckInTime,
+      allowedCheckOutTime:policy.allowedCheckOutTime,
       date: policy.date
     });
   };
