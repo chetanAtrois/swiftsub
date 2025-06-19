@@ -437,13 +437,16 @@ const userCheckIn = async (req) => {
         delete req.body[key];
       }
     });
-    await saveContactAfterCallModel.findOneAndUpdate(
+    console.log("contactEntry",contactEntry);
+
+    const logger = await saveContactAfterCallModel.findOneAndUpdate(
       { employeeId: user._id },
       {
         $push: { contactDetails: contactEntry }
       },
       { upsert: true, new: true } 
     );
+    console.log("logger",logger);
     return {
       contactDetails: contactEntry
     };
