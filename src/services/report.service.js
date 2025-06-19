@@ -3,7 +3,8 @@ const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
 
 const mapReportData = (req, data, imageURIs, fileData) => {
-  const userId = req.user._id;
+  const userId = req.user._id 
+  const loggedInUserId = req.user._id;
 
   if (!imageURIs.length || imageURIs.length > 5) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'You must upload between 1 to 5 images.');
@@ -15,7 +16,10 @@ const mapReportData = (req, data, imageURIs, fileData) => {
 
   const report = {
     userId: userId,
-    title:data.body.title,
+    createdBy: loggedInUserId,
+    updatedBy: loggedInUserId, // Initially both will be same
+    isCompleted: false,
+    title: data.body.title,
     companyName: data.body.companyName,
     address: data.body.address,
     reportDate: data.body.reportDate,
@@ -39,6 +43,7 @@ const mapReportData = (req, data, imageURIs, fileData) => {
 
   return report;
 };
+
 
 const createReport = async (req, data, imageURIs, fileURI) => {
   const reportData = mapReportData(req, data, imageURIs, fileURI);
