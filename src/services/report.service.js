@@ -60,6 +60,7 @@ const getReportsByUser = async (userId) => {
 };
 const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
   const userId = req.user._id;
+  console.log("userId",userId);
   if (!imageURIs.length || imageURIs.length > 5) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'You must upload between 1 to 5 images.');
   }
@@ -105,21 +106,30 @@ const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
 
 const updateReport = async (req) => {
   const { reportId } = req.query;
-  console.log("reporrtId",reportId);
-  console.log("reportIdUserId",reportId.userId);
+  console.log("📌 Report ID:", reportId);
+  
   const report = await Report.findById(reportId);
-if (!report) {
-  throw new ApiError(404, 'Report not found');
-}
+  if (!report) {
+    console.error("❌ Report not found in DB");
+    throw new ApiError(404, 'Report not found');
+  }
 
-// Step 2: Check permission
-if (report.userId.toString() !== req.user._id.toString()) {
-  throw new ApiError(403, 'You are not allowed to edit this report');
-}
+  console.log("📝 Existing Report:", report);
+
+  // Step 2: Check permission
+  if (report.userId.toString() !== req.user._id.toString()) {
+    console.error("🚫 Unauthorized user trying to update report");
+    throw new ApiError(403, 'You are not allowed to edit this report');
+  }
+
+  // Step 3: Process update
   const updates = mapUpdatedReportData(req, req.body, req.imageURIs, req.fileData);
   updates.updatedBy = req.user._id;
-  updates.isCompleted = true; 
-  
+  updates.isCompleted = true;
+
+  console.log("🔧 Updates to be applied:", updates);
+
+  // Step 4: Perform update
   const updatedReport = await Report.findByIdAndUpdate(
     reportId,
     { $set: updates },
@@ -127,11 +137,15 @@ if (report.userId.toString() !== req.user._id.toString()) {
   );
 
   if (!updatedReport) {
+    console.error("❌ Report update failed");
     throw new ApiError(404, 'Report not found');
   }
 
+  console.log("✅ Report updated successfully:", updatedReport);
+
   return { data: updatedReport };
 };
+
 
 
 const deleteReport = async(req)=>{
