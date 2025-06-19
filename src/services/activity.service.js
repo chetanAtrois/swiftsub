@@ -301,7 +301,7 @@ const userCheckIn = async (req) => {
     }
   
     const currentTime = new Date();
-    const predefinedPasscode = '6666'; 
+    const predefinedPasscode = '666666'; 
   
     if (passcode !== predefinedPasscode) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Passcode does not match');
