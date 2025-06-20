@@ -4,7 +4,7 @@ const firebaseConfig = {
     type: "service_account",
     project_id: "tracking-d5908",
     private_key_id: "e4a82411f2976e2b68a8b806cb935d4dc5a07100",
-    private_key: config.firebase.apikey,
+    private_key: config.firebase.apikey.replace(/\\n/g, '\n'),
     client_email: "firebase-adminsdk-fbsvc@tracking-d5908.iam.gserviceaccount.com",
     client_id: "106108379328190083467",
     auth_uri: "https://accounts.google.com/o/oauth2/auth",
