@@ -24,6 +24,4 @@ router.post('/saveContactAfterCall',auth(),activityController.saveContactAfterCa
 router.get('/getMyPermissions',auth(),activityController.getMyPermissions);
 router.get('/getMyContact',auth(),activityController.getMyContacts);
 
-
-
 module.exports = router;

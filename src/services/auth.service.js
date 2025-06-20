@@ -14,7 +14,7 @@ const {uploadFile} = require('../config/upload-image');
 const subAdmin = require('../models/subAdmin.model');
 
 const register = async (userBody) => {
-  const { roleType, email, phoneNumber, method, password } = userBody;
+  const { roleType, email, phoneNumber, method, password ,fcmToken} = userBody;
 
   const normalizedRole = roleType?.toLowerCase();
   if (!['user', 'admin'].includes(normalizedRole)) {
@@ -47,6 +47,7 @@ const register = async (userBody) => {
     ...userBody,
     role: normalizedRole,
     userType: normalizedRole, 
+    fcmToken,
     ...(method === 'google' && { password: undefined }), 
   };
 
@@ -56,7 +57,7 @@ const register = async (userBody) => {
 };
 
 const login = async (userBody) => {
-  const { email, password, method } = userBody;
+  const { email, password, method ,fcmToken} = userBody;
   let user = await Admin.findOne({ email }) || await User.findOne({ email });
 
   if (!user) {
@@ -81,7 +82,8 @@ const login = async (userBody) => {
   if (!isPasswordCorrect) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
-  return user;
+  const updatedUser = await User.findOneAndUpdate({email}, {$set: {fcmToken}}, {new: true});
+  return updatedUser;
 
 };
 
@@ -149,7 +151,7 @@ const logout = async (req) => {
   }
 
   await refreshTokenDoc.remove();
-
+  await User.findOneAndUpdate({_id: userId}, {$set: {fcmToken: null}});
   const activeCheckIn = await employeeActivityModel.findOne({
     employeeId: userId,
     status: "checked-in",

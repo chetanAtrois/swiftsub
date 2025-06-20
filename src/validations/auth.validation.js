@@ -17,6 +17,7 @@ const register = {
     roleType: Joi.string().required().valid('user','admin'),
     phoneNumber: Joi.string().required(),
     companyName: Joi.string().required(),
+    fcmToken:Joi.string().optional(),
     method: Joi.string().valid('google').optional() 
   }),
 };
@@ -54,7 +55,8 @@ const login = {
       then: Joi.string().optional(),
       otherwise: Joi.string().required()
     }),
-    method: Joi.string().valid('google').optional()
+    method: Joi.string().valid('google').optional(),
+    fcmToken:Joi.string().optional()
   })
 };
 

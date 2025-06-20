@@ -72,6 +72,10 @@ const userSchema = mongoose.Schema(
       enum: ['user'],
       immutable: true,
     },
+    fcmToken:{
+      type:String,
+      default:null
+    },
     location: {
       type: {
         type: String,

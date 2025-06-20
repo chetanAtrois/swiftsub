@@ -66,5 +66,8 @@ module.exports = {
     accessId: envVars.ACCESS_KEY_ID,
     secretKey: envVars.SECRET_KEY,
     bucketName: envVars.AWS_BUCKET_NAME,
-  }
+  },
+  firebase: {
+    apikey: envVars.FIREBASE_API_KEY
+  },
 };
