@@ -10,26 +10,22 @@ const saveContactAfterCallModel = require('../models/saveContactAfterCall.model'
 const Permission = require('../models/permission.model');
 
 const userCheckIn = async (req) => {
-  const existingCheckIn = await employeeActivityModel.findOne({
-    employeeId: req.user?._id,
-    status: "checked-in",
-  });
+  const { adminCheckInTime, adminCheckOutTime, adminWorkingDate } = req.body;
 
-  if (!req.user || !req.user._id) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated");
+  if (!adminCheckInTime || !adminCheckOutTime || !adminWorkingDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Admin check-in, check-out, and date are required");
   }
 
-  if (existingCheckIn) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "User is already checked in");
+  // Combine date with time (assume IST)
+  const adminCheckIn = new Date(`${adminWorkingDate}T${adminCheckInTime}:00+05:30`);
+  const adminCheckOut = new Date(`${adminWorkingDate}T${adminCheckOutTime}:00+05:30`);
+
+  if (isNaN(adminCheckIn) || isNaN(adminCheckOut)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid admin check-in or check-out time format");
   }
 
-  const now = new Date(); // UTC time
-  const isoString = now.toISOString(); 
-  const datePart = isoString.split("T")[0];
-
-  const scheduledIST = new Date(`${datePart}T09:00:00+05:30`);
-
-  const timeDifferenceInMinutes = (now - scheduledIST) / (1000 * 60);
+  const now = new Date();
+  const timeDifferenceInMinutes = (now - adminCheckIn) / (1000 * 60);
 
   let checkInStatus = "on-time";
   if (timeDifferenceInMinutes < 0) checkInStatus = "early";
@@ -41,6 +37,9 @@ const userCheckIn = async (req) => {
     checkInTimeDifference: timeDifferenceInMinutes,
     checkInStatus,
     status: "checked-in",
+    adminCheckInTime: adminCheckIn,
+    adminCheckOutTime: adminCheckOut, // ✅ fixed this
+    adminWorkingDate: new Date(adminWorkingDate),
   });
 
   return newCheckIn;
@@ -48,38 +47,59 @@ const userCheckIn = async (req) => {
 
 
 
-  const userCheckOut = async (req) => {
-    const { employeeActivityId } = req.query;
-    const employeeDetails = await employeeActivityModel.findOne({
-        employeeId: req.user._id,
-        _id: employeeActivityId,
-        status: "checked-in"
-      });
-    
-      if (!employeeDetails) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "No active check-in found or already checked out");
-      }
-    const timeDiffInMilliseconds = new Date() - new Date(employeeDetails.checkInTime);
-    const timeDiffInHours = timeDiffInMilliseconds / (1000 * 60 * 60);
-      const employeeCheckout = await employeeActivityModel.findOneAndUpdate(
-      {
-        employeeId: req.user._id,
-        _id: employeeActivityId,
+
+const userCheckOut = async (req) => {
+  const { employeeActivityId } = req.query;
+
+  const employeeDetails = await employeeActivityModel.findOne({
+    employeeId: req.user._id,
+    _id: employeeActivityId,
+    status: "checked-in",
+  });
+
+  if (!employeeDetails) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No active check-in found or already checked out");
+  }
+
+  const userCheckIn = new Date(employeeDetails.checkInTime);
+  const userCheckOut = new Date();
+  const actualDuration = (userCheckOut - userCheckIn) / (1000 * 60 * 60); // in hours
+
+  const adminCheckIn = new Date(employeeDetails.adminCheckInTime);
+  const adminCheckOut = new Date(employeeDetails.adminCheckOutTime);
+  const expectedDuration = (adminCheckOut - adminCheckIn) / (1000 * 60 * 60);
+
+  const lateCheckIn = Math.max(0, (userCheckIn - adminCheckIn) / (1000 * 60)); // in minutes
+  const earlyCheckOut = Math.max(0, (adminCheckOut - userCheckOut) / (1000 * 60)); // in minutes
+
+  let overwork = 0;
+  let underwork = 0;
+
+  if (actualDuration > expectedDuration) {
+    overwork = actualDuration - expectedDuration;
+  } else {
+    underwork = expectedDuration - actualDuration;
+  }
+
+  const updated = await employeeActivityModel.findOneAndUpdate(
+    { employeeId: req.user._id, _id: employeeActivityId },
+    {
+      $set: {
+        checkOutTime: userCheckOut,
+        timeDiffInHours: actualDuration,
+        status: "checked-out",
+        lateCheckInMinutes: lateCheckIn,
+        earlyCheckOutMinutes: earlyCheckOut,
+        overworkHours: overwork,
+        underworkHours: underwork,
       },
-      {
-        $set: {
-          checkOutTime: new Date(),
-          timeDiffInHours,
-          status: "checked-out"
-        },
-      },
-      {
-        new: true, 
-      }
-    );
-  
-    return employeeCheckout;
-  };
+    },
+    { new: true }
+  );
+
+  return updated;
+};
+
 
   const trackerStatus = async (req) => {
     const employeeDetails = await employeeActivityModel.findOne({

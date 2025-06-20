@@ -19,7 +19,40 @@ const employeeActvitySchema = new mongoose.Schema({
   },
   checkInStatus: {
     type: String,
-    required: false,
+    enum: ['on-time', 'early', 'late'],
+    required: false
+  },
+  adminCheckInTime: {
+    type: Date,
+    required: false
+  },
+  adminCheckOutTime: {
+    type: Date,
+    required: false
+  },
+  adminWorkingDate: {
+    type: Date,
+    required: false
+  },
+  timeDiffInHours: {
+    type: Number,
+    required: false
+  },
+  lateCheckInMinutes: {
+    type: Number,
+    required: false
+  },
+  earlyCheckOutMinutes: {
+    type: Number,
+    required: false
+  },
+  overworkHours: {
+    type: Number,
+    required: false
+  },
+  underworkHours: {
+    type: Number,
+    required: false
   },
   alarmLogs: [
     {
@@ -34,7 +67,7 @@ const employeeActvitySchema = new mongoose.Schema({
       }
     }
   ],
-    status: {
+  status: {
     type: String,
     enum: ["checked-in", "checked-out"],
     default: "checked-in"
