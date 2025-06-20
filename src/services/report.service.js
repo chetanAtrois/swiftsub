@@ -75,8 +75,6 @@ const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
     'address',
     'reportDate',
     'reportTime',
-    'notes',
-    'businessSize',
     'images',
     'file',
   ];
@@ -92,6 +90,14 @@ const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
     }
   }
 
+  if (body.notes && body.notes.trim() !== '') {
+    updates.notes = body.notes.trim();
+  }
+
+  if (body.businessSize && body.businessSize.trim() !== '') {
+    updates.businessSize = body.businessSize.trim();
+  }
+
   if (imageURIs) {
     updates.images = imageURIs;
   }
@@ -100,6 +106,7 @@ const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
   }
 
   updates.customFields = customFields;
+  
 
   return updates;
 };
