@@ -10,50 +10,43 @@ const saveContactAfterCallModel = require('../models/saveContactAfterCall.model'
 const Permission = require('../models/permission.model');
 
 const userCheckIn = async (req) => {
-  const { checkInDate, checkInTime } = req.body;
-
   const existingCheckIn = await employeeActivityModel.findOne({
-    employeeId: req.user._id,
+    employeeId: req.user?._id,
     status: "checked-in",
   });
+
+  if (!req.user || !req.user._id) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated");
+  }
 
   if (existingCheckIn) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User is already checked in");
   }
 
-  const istCheckIn = new Date(`${checkInDate}T${checkInTime}:00+05:30`);
+  const now = new Date(); // UTC time
+  const isoString = now.toISOString(); 
+  const datePart = isoString.split("T")[0];
 
-  const now = new Date();
+  const scheduledIST = new Date(`${datePart}T09:00:00+05:30`);
 
-  console.log("User selected check-in datetime:", istCheckIn.toISOString());
-  console.log("Current datetime (server):", now.toISOString());
+  const timeDifferenceInMinutes = (now - scheduledIST) / (1000 * 60);
 
-  if (istCheckIn < now) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Check-in time must be in the future");
-  }
+  let checkInStatus = "on-time";
+  if (timeDifferenceInMinutes < 0) checkInStatus = "early";
+  else if (timeDifferenceInMinutes > 0) checkInStatus = "late";
 
-  const scheduledTime = new Date(`${checkInDate}T09:00:00+05:30`);
-  const timeDifferenceInMinutes = (istCheckIn - scheduledTime) / (1000 * 60);
-
-  let checkInStatus;
-  if (timeDifferenceInMinutes < 0) {
-    checkInStatus = "early";
-  } else if (timeDifferenceInMinutes === 0) {
-    checkInStatus = "on-time";
-  } else {
-    checkInStatus = "late";
-  }
-
-  const user = await employeeActivityModel.create({
+  const newCheckIn = await employeeActivityModel.create({
     employeeId: req.user._id,
-    checkInTime: istCheckIn,
+    checkInTime: now,
     checkInTimeDifference: timeDifferenceInMinutes,
     checkInStatus,
     status: "checked-in",
   });
 
-  return user;
+  return newCheckIn;
 };
+
+
 
   const userCheckOut = async (req) => {
     const { employeeActivityId } = req.query;
