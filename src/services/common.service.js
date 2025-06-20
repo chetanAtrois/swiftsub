@@ -88,7 +88,7 @@ const getNotification = async (req) => {
   const userNotifications = await Notification.findOne({ userId }).select('notification');
 
   if (!userNotifications) {
-    throw new Error("No notifications found for this user");
+    throw new ApiError(httpStatus.BAD_REQUEST, 'No Notification found for this user');
   }
 
   return userNotifications;
