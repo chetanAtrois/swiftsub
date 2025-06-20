@@ -30,11 +30,17 @@ const getDeletedTaskByDate = {
 
     })
 };
+const updateTask = {
+    query:Joi.object().keys({
+        taskId:Joi.string().required()
+    })
+};
 
 module.exports = {
     getTaskByUser,
     deleteTask,
     getDeletedTaskByUser,
     getTaskByDate,
-    getDeletedTaskByDate
+    getDeletedTaskByDate,
+    updateTask
 }

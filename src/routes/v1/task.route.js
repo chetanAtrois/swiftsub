@@ -21,5 +21,10 @@ router.get('/getTaskByDate', validate(taskValidation.getTaskByDate),taskControll
 router.put('/deleteTask', validate(taskValidation.deleteTask),taskController.deleteTask);
 router.get('/getDeletedTask',validate(taskValidation.getDeletedTaskByUser),taskController.getDeletedTask);
 router.get('/getDeletedTaskByDate',validate(taskValidation.getDeletedTaskByDate),taskController.getDeletedTaskByDate);
-
+router.put(
+  '/updateTask',
+  auth(),
+  upload.fields([{ name: 'file', maxCount: 1 }]), validate(taskValidation.updateTask),
+  taskController.updateTask
+);
 module.exports = router;

@@ -31,6 +31,29 @@ const createTask = catchAsync(async (req, res) => {
     data: task,
   });
 });
+const updateTask = catchAsync(async (req, res) => {
+  const file = req.files?.file?.[0];
+  let fileData = null;
+
+  if (file) {
+    const uploadResult = await uploadFile(file, 'tasks/audio');
+    if (!uploadResult.success) {
+      throw new ApiError(500, 'File upload failed');
+    }
+    fileData = {
+      uri: uploadResult.imageURI,
+      type: file.mimetype,
+    };
+  }
+
+  const updatedTask = await taskService.updateTask(req, fileData);
+
+  res.status(200).json({
+    success: true,
+    message: 'Task updated successfully',
+    data: updatedTask,
+  });
+});
 
 const getTask = catchAsync(async (req, res) => {
   const tasktList = await taskService.getTaskByUser(req);
@@ -62,5 +85,6 @@ module.exports = {
     deleteTask,
     getDeletedTask,
     getTaskByDate,
-    getDeletedTaskByDate
+    getDeletedTaskByDate,
+    updateTask
 };

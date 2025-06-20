@@ -31,6 +31,76 @@ const createTask = async (req, data, fileURI) => {
   return task;
 };
 
+const updateTask = async (req, fileData) => {
+  const { taskId } = req.query;
+  const userId = req.user._id;
+  const {
+    title,
+    description,
+    taskDate,
+    startWorkingHour,
+    endWorkingHour,
+    durationOfTask,
+  } = req.body;
+
+  console.log(" [UpdateTask] Incoming request:");
+  console.log(" taskId:", taskId);
+  console.log(" userId:", userId);
+  console.log(" fileData:", fileData);
+  console.log(" body:", {
+    title,
+    description,
+    taskDate,
+    startWorkingHour,
+    endWorkingHour,
+    durationOfTask,
+  });
+
+  if (!taskId) throw new ApiError(400, 'taskId is required');
+
+  const task = await Task.findById(taskId);
+  console.log(" [UpdateTask] Existing Task:", task);
+
+  if (!task) throw new ApiError(404, 'Task not found');
+
+  if (task.userId.toString() !== userId.toString()) {
+    throw new ApiError(403, 'Not authorized to update this task');
+  }
+
+  const updates = {};
+  if (title) updates.title = title;
+  if (description) updates.description = description;
+  if (taskDate) updates.taskDate = taskDate;
+  if (startWorkingHour) updates.startWorkingHour = startWorkingHour;
+  if (endWorkingHour) updates.endWorkingHour = endWorkingHour;
+  if (durationOfTask) updates.durationOfTask = durationOfTask;
+
+  if (fileData) {
+    updates.audio = {
+      uri: fileData.uri,
+      type: fileData.type,
+    };
+  }
+
+  console.log(" [UpdateTask] Updates to apply:", updates);
+
+  const updatedTask = await Task.findByIdAndUpdate(
+    taskId,
+    { $set: updates },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedTask) {
+    console.error(" [UpdateTask] Failed to update task in DB");
+    throw new ApiError(500, 'Failed to update task');
+  }
+
+  console.log("✅ [UpdateTask] Task updated successfully:", updatedTask);
+
+  return updatedTask;
+};
+
+
 const getTaskByUser = async (req, includeDeleted = false) => {
   const { userId } = req.query;
   const user = await Task.find({ userId: userId })
@@ -129,5 +199,6 @@ module.exports = {
   deleteTask,
   getDeletedTaskByUser,
   getTaskByDate,
-  getDeletedTaskByDate
+  getDeletedTaskByDate,
+  updateTask
 };
