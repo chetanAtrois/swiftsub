@@ -8,23 +8,23 @@ const taskSchema = new mongoose.Schema({
   },
   title:{
     type: String,
-    required: true,
+    required: false,
   },
   description: {
     type: String,
-    required: true,
+    required: false,
   },
   taskDate: {
     type: Date,
-    required: true,
+    required: false,
   },
   startWorkingHour: {
     type: String,
-    required: true,
+    required: false,
   },
   endWorkingHour: {
     type: String,
-    required: true,
+    required: false,
   },
   durationOfTask:{
     type: String,
@@ -42,7 +42,7 @@ const taskSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'pending', 'deleted', 'completed'],
+    enum: ['seen', 'accepted', 'progress', 'completed'],
     required: false,
   },
   createdAt: {
