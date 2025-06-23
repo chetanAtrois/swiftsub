@@ -41,6 +41,7 @@ const updateTask = async (req, fileData) => {
     startWorkingHour,
     endWorkingHour,
     durationOfTask,
+    file
   } = req.body;
 
   console.log(" [UpdateTask] Incoming request:");
@@ -54,6 +55,7 @@ const updateTask = async (req, fileData) => {
     startWorkingHour,
     endWorkingHour,
     durationOfTask,
+    file
   });
 
   if (!taskId) throw new ApiError(400, 'taskId is required');
@@ -76,9 +78,11 @@ const updateTask = async (req, fileData) => {
   if (durationOfTask) updates.durationOfTask = durationOfTask;
 
   if (fileData) {
-    updates.audio = {
-      uri: fileData.uri,
+    updates.file = {
+      url: fileData.url,
+      name: fileData.name,
       type: fileData.type,
+      size: fileData.size,
     };
   }
 
@@ -99,6 +103,7 @@ const updateTask = async (req, fileData) => {
 
   return updatedTask;
 };
+
 
 
 const getTaskByUser = async (req, includeDeleted = false) => {

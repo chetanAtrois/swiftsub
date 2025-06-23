@@ -41,8 +41,10 @@ const updateTask = catchAsync(async (req, res) => {
       throw new ApiError(500, 'File upload failed');
     }
     fileData = {
-      uri: uploadResult.imageURI,
+      url: uploadResult.imageURI,  // ✅ correct key expected by service
+      name: file.originalname,
       type: file.mimetype,
+      size: file.size,
     };
   }
 
