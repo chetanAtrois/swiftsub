@@ -420,6 +420,11 @@ const setPosition = async (req) => {
 
   return updatedPosition;
 };
+const getPosition = async(req)=>{
+  const {userId} = req.query;
+  const updatedPosition = await User.findOne({_id:userId}).select('companyPosition');
+  return updatedPosition;
+}
 
 
 module.exports = {
@@ -438,5 +443,6 @@ module.exports = {
   uploadMedia,
   getUserByPhoneNumber,
   getUsersById,
-  setPosition
+  setPosition,
+  getPosition
 };

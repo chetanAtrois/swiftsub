@@ -186,6 +186,10 @@ const setPosition = catchAsync(async (req, res) => {
   const user = await authService.setPosition(req);
   res.status(httpStatus.OK).send({ success: true, user });
 });
+const getPosition = catchAsync(async (req, res) => {
+  const user = await authService.getPosition(req);
+  res.status(httpStatus.OK).send({ success: true, user });
+});
 
 
 module.exports = {
@@ -207,5 +211,6 @@ module.exports = {
   uploadUserMedia,
   getUserByPhoneNumber,
   getUserById,
-  setPosition
+  setPosition,
+  getPosition
 };

@@ -45,6 +45,11 @@ const setPosition = {
     position:Joi.string().required()
   })
 };
+const getPosition = {
+  query:Joi.object().keys({
+    userId:Joi.string().required()
+  })
+};
 
 
 const login = {
@@ -153,5 +158,6 @@ module.exports = {
   getUserProfile,
   updateUser,
   getUserByPhoneNumber,
-  setPosition
+  setPosition,
+  getPosition
 };

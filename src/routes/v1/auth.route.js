@@ -19,6 +19,7 @@ router.get('/companyList',validate(authValidation.fetchCompanyList),authControll
 router.get('/getUserProfile',validate(authValidation.getUserProfile),authController.getUserProfile);
 router.put('/updateUser',validate(authValidation.updateUser),authController.updateUser);
 router.put('/setPosition',auth(),validate(authValidation.setPosition),authController.setPosition);
+router.get('/getPosition',validate(authValidation.getPosition),authController.getPosition);
 
 router.post(
     '/uploadProfileImage',
