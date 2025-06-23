@@ -104,8 +104,6 @@ const updateTask = async (req, fileData) => {
   return updatedTask;
 };
 
-
-
 const getTaskByUser = async (req, includeDeleted = false) => {
   const { userId } = req.query;
   const user = await Task.find({ userId: userId })

@@ -16,9 +16,18 @@ const userCheckIn = async (req) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Admin check-in, check-out, and date are required");
   }
 
-  // Combine date with time (assume IST)
-  const adminCheckIn = new Date(`${adminWorkingDate}T${adminCheckInTime}:00+05:30`);
-  const adminCheckOut = new Date(`${adminWorkingDate}T${adminCheckOutTime}:00+05:30`);
+  function combineDateAndTime(dateStr, timeStr) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const date = new Date(dateStr);
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    date.setSeconds(0);
+    date.setMilliseconds(0);
+    return date;
+  }
+
+  const adminCheckIn = combineDateAndTime(adminWorkingDate, adminCheckInTime);
+  const adminCheckOut = combineDateAndTime(adminWorkingDate, adminCheckOutTime);
 
   if (isNaN(adminCheckIn) || isNaN(adminCheckOut)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid admin check-in or check-out time format");
@@ -38,12 +47,13 @@ const userCheckIn = async (req) => {
     checkInStatus,
     status: "checked-in",
     adminCheckInTime: adminCheckIn,
-    adminCheckOutTime: adminCheckOut, // ✅ fixed this
+    adminCheckOutTime: adminCheckOut,
     adminWorkingDate: new Date(adminWorkingDate),
   });
 
   return newCheckIn;
 };
+
 
 
 
