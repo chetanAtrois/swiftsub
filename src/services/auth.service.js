@@ -15,6 +15,7 @@ const subAdmin = require('../models/subAdmin.model');
 
 const register = async (userBody) => {
   const { roleType, email, phoneNumber, method, password ,fcmToken} = userBody;
+  console.log("userBody",userBody);
 
   const normalizedRole = roleType?.toLowerCase();
   if (!['user', 'admin'].includes(normalizedRole)) {
@@ -59,6 +60,7 @@ const register = async (userBody) => {
 const login = async (userBody) => {
   const { email, password, method ,fcmToken} = userBody;
   let user = await Admin.findOne({ email }) || await User.findOne({ email });
+  console.log("user",user);
 
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
