@@ -134,6 +134,13 @@ const updateReport = async (req) => {
   updates.updatedBy = req.user._id;
   updates.isCompleted = true;
 
+  // ✅ Clean invalid/undefined/empty values to avoid enum errors
+  Object.keys(updates).forEach((key) => {
+    if (updates[key] === undefined || updates[key] === '') {
+      delete updates[key];
+    }
+  });
+
   console.log("🔧 Updates to be applied:", updates);
 
   // Step 4: Perform update
@@ -152,6 +159,7 @@ const updateReport = async (req) => {
 
   return { data: updatedReport };
 };
+
 
 const updateCompanyName = async (req) => {
   const { reportId } = req.query;
