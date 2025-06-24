@@ -107,16 +107,17 @@ const updateTask = async (req, fileData) => {
   return updatedTask;
 };
 
-const getTaskByUser = async (req, includeDeleted = false) => {
-  const { userId } = req.query;
-  const user = await Task.find({ userId: userId })
-  if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
+const getTaskByUser = async (req) => {
+  const { userId, status } = req.query;
+
+  if (!userId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'userId is required');
   }
+
   const filter = { userId };
 
-  if (!includeDeleted) {
-    filter.status = 'active';
+  if (status) {
+    filter.status = status; 
   }
 
   const task = await Task.find(filter).sort({ createdAt: -1 });
