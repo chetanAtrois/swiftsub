@@ -66,6 +66,7 @@ const userCheckOut = async (req) => {
     _id: employeeActivityId,
     status: "checked-in",
   });
+  console.log("employeeDetails",employeeDetails)
 
   if (!employeeDetails) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No active check-in found or already checked out");
@@ -73,14 +74,24 @@ const userCheckOut = async (req) => {
 
   const userCheckIn = new Date(employeeDetails.checkInTime);
   const userCheckOut = new Date();
+  console.log("userCheckOut",userCheckOut)
+
   const actualDuration = (userCheckOut - userCheckIn) / (1000 * 60 * 60); // in hours
+  console.log("actualDuration",actualDuration)
+
 
   const adminCheckIn = new Date(employeeDetails.adminCheckInTime);
   const adminCheckOut = new Date(employeeDetails.adminCheckOutTime);
   const expectedDuration = (adminCheckOut - adminCheckIn) / (1000 * 60 * 60);
+  console.log("adminCheckIn",adminCheckIn)
+  console.log("adminCheckOut",adminCheckOut)
+  console.log("expectedDuration",expectedDuration)
+
 
   const lateCheckIn = Math.max(0, (userCheckIn - adminCheckIn) / (1000 * 60)); // in minutes
   const earlyCheckOut = Math.max(0, (adminCheckOut - userCheckOut) / (1000 * 60)); // in minutes
+  console.log("lateCheckIn",lateCheckIn)
+  console.log("earlyCheckOut",earlyCheckOut)
 
   let overwork = 0;
   let underwork = 0;
@@ -106,6 +117,8 @@ const userCheckOut = async (req) => {
     },
     { new: true }
   );
+  console.log("updated",updated)
+
 
   return updated;
 };
