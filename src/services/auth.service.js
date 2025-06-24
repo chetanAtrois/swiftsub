@@ -58,9 +58,8 @@ const register = async (userBody) => {
 };
 
 const login = async (userBody) => {
-  const { email, password, method ,fcmToken} = userBody;
+  const { email, password, method, fcmToken } = userBody;
   let user = await Admin.findOne({ email }) || await User.findOne({ email });
-  console.log("user",user);
 
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
@@ -68,12 +67,12 @@ const login = async (userBody) => {
 
   if (method === 'google') {
     if (user.method !== 'google') {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        'This account requires password login'
-      );
+      throw new ApiError(httpStatus.BAD_REQUEST, 'This account requires password login');
     }
-    return user; 
+
+    user.fcmToken = fcmToken;
+    await user.save();
+    return user;
   }
 
   if (!password) {
@@ -84,10 +83,14 @@ const login = async (userBody) => {
   if (!isPasswordCorrect) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
-  const updatedUser = await User.findOneAndUpdate({email}, {$set: {fcmToken}}, {new: true});
-  return updatedUser;
 
+  // ✅ Update FCM token for password login
+  user.fcmToken = fcmToken;
+  await user.save();
+
+  return user;
 };
+
 
 
 const loginUserWithPhoneNumber = async (userBody) => {
@@ -136,8 +139,6 @@ const getUsersById = async (req) => {
   return allUsers;
 };
 
-
-
 const logout = async (req) => {
   const { refreshToken } = req.body;
   const userId = req.user._id; 
@@ -182,7 +183,6 @@ const logout = async (req) => {
       : 'User logged out successfully',
   };
 };
-
 
 const refreshAuth = async (refreshToken) => {
   try {
