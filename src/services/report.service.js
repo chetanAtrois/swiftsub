@@ -60,7 +60,7 @@ const getReportsByUser = async (userId) => {
 };
 const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
   const userId = req.user._id;
-  console.log("userId",userId);
+
   if (!imageURIs.length || imageURIs.length > 5) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'You must upload between 1 to 5 images.');
   }
@@ -75,41 +75,39 @@ const mapUpdatedReportData = (req, body, imageURIs, fileData) => {
     'address',
     'reportDate',
     'reportTime',
-    'images',
-    'file',
+    'notes',
+    'businessSize',
   ];
 
   const updates = {};
   const customFields = {};
 
   for (const key in body) {
+    const value = body[key];
+    if (value === undefined || value === '') continue;
+
     if (knownFields.includes(key)) {
-      updates[key] = body[key];
+      updates[key] = typeof value === 'string' ? value.trim() : value;
     } else {
-      customFields[key] = body[key];
+      customFields[key] = value;
     }
   }
 
-  if (body.notes && body.notes.trim() !== '') {
-    updates.notes = body.notes.trim();
-  }
-
-  if (body.businessSize && body.businessSize.trim() !== '') {
-    updates.businessSize = body.businessSize.trim();
-  }
-
-  if (imageURIs) {
+  if (imageURIs?.length) {
     updates.images = imageURIs;
   }
+
   if (fileData) {
     updates.file = fileData;
   }
 
-  updates.customFields = customFields;
-  
+  if (Object.keys(customFields).length > 0) {
+    updates.customFields = customFields;
+  }
 
   return updates;
 };
+
 
 const updateReport = async (req) => {
   const { reportId } = req.query;

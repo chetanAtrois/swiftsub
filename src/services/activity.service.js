@@ -118,8 +118,6 @@ const userCheckOut = async (req) => {
     { new: true }
   );
   console.log("updated",updated)
-
-
   return updated;
 };
 
