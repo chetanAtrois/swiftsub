@@ -108,21 +108,24 @@ const updateTask = async (req, fileData) => {
 };
 
 const getTaskByUser = async (req) => {
-  const { userId, status } = req.query;
-
+  const { userId } = req.query;
   if (!userId) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'userId is required');
   }
 
-  const filter = { userId };
+  const tasks = await Task.find({
+    userId,
+    status: { $ne: "deleted" },
+  }).sort({ createdAt: -1 });
 
-  if (status) {
-    filter.status = status; 
-  }
-
-  const task = await Task.find(filter).sort({ createdAt: -1 });
-  return task;
+  console.log("✅ Filtered tasks (excluding deleted):", tasks);
+  return tasks;
 };
+
+
+
+
+
 
 const getTaskByDate = async (req) => {
   const { userId, date } = req.query;
