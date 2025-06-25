@@ -82,7 +82,7 @@ const updateTask = async (req, fileData) => {
 
   if (fileData) {
     updates.file = {
-      url: fileData.url,
+      url: fileData.url,  
       name: fileData.name,
       type: fileData.type,
       size: fileData.size,
@@ -124,7 +124,7 @@ const getTaskByUser = async (req) => {
   return task;
 };
 
-const getTaskByDate = async (req, includeDeleted = false) => {
+const getTaskByDate = async (req) => {
   const { userId, date } = req.query;
 
   if (!userId) {
@@ -132,10 +132,6 @@ const getTaskByDate = async (req, includeDeleted = false) => {
   }
 
   const filter = { userId };
-
-  if (!includeDeleted) {
-    filter.status = 'active';
-  }
 
   if (date) {
     const startOfDay = new Date(`${date}T00:00:00.000Z`);
