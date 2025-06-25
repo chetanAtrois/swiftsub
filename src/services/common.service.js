@@ -77,17 +77,25 @@ const getNotification = async (req) => {
   return userNotifications;
 };
 const markNotificationAsRead = async (req) => {
-  const { notificationId } = req.body;
+  const { userId } = req.body;
 
-  const updated = await Notification.findByIdAndUpdate(notificationId, {
-    $set: { read: true },
-  }, { new: true });
-
-  if (!updated) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found');
+  if (!userId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User ID is required');
   }
 
-  return updated 
+  const result = await Notification.updateMany(
+    { userId, read: false },
+    { $set: { read: true } }
+  );
+
+  if (result.modifiedCount === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No unread notifications found for this user');
+  }
+
+  return {
+    message: 'All unread notifications marked as read',
+    updatedCount: result.modifiedCount,
+  };
 };
 
 
