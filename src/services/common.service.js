@@ -20,10 +20,6 @@ const pushNotification = async (req) => {
   }
 
   const receiver = await User.findById(receiverId);
-  console.log("user",receiver);
-  console.log("FCM token received:", receiver.fcmToken, "| Length:", receiver.fcmToken?.length);
-
-
   if (!receiver || typeof receiver.fcmToken !== 'string' || !receiver.fcmToken.trim()) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'FCM token not found for the receiver');
   }
@@ -45,38 +41,25 @@ const pushNotification = async (req) => {
 
   const notificationResult = await sendNotifications(fcmMessage);
 
-  const notificationEntry = {
+  // Save single notification document
+  await Notification.create({
+    userId: receiverId,
+    userType: receiverUserType,
     title,
     message,
     notificationType,
     notificationSender: senderId,
     senderUserType,
     notificationCreatedAt: new Date(),
-  };
-
-  const existing = await Notification.findOne({
-    userId: receiverId,
-    userType: receiverUserType,
+    read: false, // explicitly default
   });
-
-  if (!existing) {
-    await Notification.create({
-      userId: receiverId,
-      userType: receiverUserType,
-      notification: [notificationEntry],
-    });
-  } else {
-    await Notification.updateOne(
-      { userId: receiverId, userType: receiverUserType },
-      { $push: { notification: notificationEntry } }
-    );
-  }
 
   return {
     message: 'Notification sent and saved in DB',
     result: notificationResult,
   };
 };
+
 
 const getNotification = async (req) => {
   const { userId } = req.query;
@@ -93,8 +76,23 @@ const getNotification = async (req) => {
 
   return userNotifications;
 };
+const markNotificationAsRead = async (req) => {
+  const { notificationId } = req.body;
+
+  const updated = await Notification.findByIdAndUpdate(notificationId, {
+    $set: { read: true },
+  }, { new: true });
+
+  if (!updated) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found');
+  }
+
+  return updated 
+};
+
 
 module.exports = {
   pushNotification,
-  getNotification
+  getNotification,
+  markNotificationAsRead
 };

@@ -118,14 +118,9 @@ const getTaskByUser = async (req) => {
     status: { $ne: "deleted" },
   }).sort({ createdAt: -1 });
 
-  console.log("✅ Filtered tasks (excluding deleted):", tasks);
+  console.log("Filtered tasks (excluding deleted):", tasks);
   return tasks;
 };
-
-
-
-
-
 
 const getTaskByDate = async (req) => {
   const { userId, date } = req.query;

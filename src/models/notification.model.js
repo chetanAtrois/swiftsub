@@ -12,27 +12,28 @@ const notificationSchema = new mongoose.Schema(
       required: true, 
       enum: ['User', 'subAdmin'] 
     },
-    notification: [{
-      title: { type: String, default: null },
-      message: { type: String, default: null },
-      notificationType: { type: String, default: null },
+    title: { type: String, default: null },
+    message: { type: String, default: null },
+    notificationType: { type: String, default: null },
 
-      // Sender fields
-      notificationSender: {
-        type: mongoose.Types.ObjectId,
-        refPath: 'notification.senderUserType'
-      },
-      senderUserType: { 
-        type: String, 
-        enum: ['User', 'subAdmin'], 
-        required: true 
-      },
+    notificationSender: {
+      type: mongoose.Types.ObjectId,
+      refPath: 'senderUserType'
+    },
+    senderUserType: { 
+      type: String, 
+      enum: ['User', 'subAdmin'], 
+      required: true 
+    },
 
-      notificationCreatedAt: {
-        type: Date, 
-        default: Date.now
-      }
-    }]
+    notificationCreatedAt: {
+      type: Date, 
+      default: Date.now
+    },
+    read: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true

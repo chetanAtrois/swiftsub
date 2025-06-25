@@ -10,8 +10,13 @@ const sendPushNotification = catchAsync(async (req, res) => {
     const notificationData = await commonService.getNotification(req);
     res.status(200).send({ success: true, notificationData });
   });
+  const markNotificationAsRead = catchAsync(async (req, res) => {
+    const notificationData = await commonService.markNotificationAsRead(req);
+    res.status(200).send({ success: true, notificationData });
+  });
 
   module.exports = {
     sendPushNotification,
-    getNotification
+    getNotification,
+    markNotificationAsRead
   }
