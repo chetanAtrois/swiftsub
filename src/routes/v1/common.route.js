@@ -7,6 +7,7 @@ const upload = multer({ dest: 'uploads/' });
 const router = express.Router();
 router.post('/sendNotification', commonController.sendPushNotification);
 router.get('/getNotification', commonController.getNotification);
+router.delete('/deleteNotification', commonController.deleteNotification);
 router.put('/markNotificationAsRead',commonController.markNotificationAsRead);
 router.post('/speechToText', 
     auth(), 

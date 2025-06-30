@@ -107,9 +107,16 @@ const markNotificationAsRead = async (req) => {
     updatedCount: result.modifiedCount,
   };
 };
+const deleteNotification = async (req) => {
+  const { notificationId } = req.query;
 
+  if (!notificationId) {
+    throw new Error("Notification already deleted");
+  }
 
-
+  const userNotifications = await Notification.findByIdAndDelete({ _id:notificationId }).sort({ createdAt: -1 });
+  return userNotifications;
+};
 
 const speechToText = async (req) => {
   console.log("🎙️ Starting speech to text processing...");
@@ -224,5 +231,6 @@ module.exports = {
   getNotification,
   markNotificationAsRead,
   speechToText,
-  textToSpeech
+  textToSpeech,
+  deleteNotification
 };
