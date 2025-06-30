@@ -15,5 +15,6 @@ router.post('/speechToText',
     ]), 
     commonController.speechToText
 );
+router.post('/textToSpeech', auth(), commonController.textToSpeech);
 
 module.exports = router;

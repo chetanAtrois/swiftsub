@@ -173,9 +173,56 @@ const speechToText = async (req) => {
   };
 };
 
+const textToSpeech = async (req) => {
+  const { text } = req.body;
+
+  if (!text) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Text is required');
+  }
+
+  console.log("🧠 Generating speech from text...");
+
+  const outputPath = path.join(__dirname, '..', 'temp', `${Date.now()}-tts.mp3`);
+
+  const response = await openai.audio.speech.create({
+    model: 'tts-1', 
+    voice: 'alloy', 
+    input: text,
+  });
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(outputPath, buffer);
+
+  console.log("✅ Audio generated with TTS");
+
+  const uploadResponse = await uploadFile(
+    {
+      path: outputPath,
+      originalname: 'tts.mp3',
+      filename: path.basename(outputPath),
+    },
+    'speech/tts'
+  );
+
+  fs.unlinkSync(outputPath);
+
+  if (!uploadResponse.success) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to upload TTS audio');
+  }
+
+  console.log("✅ TTS audio uploaded:", uploadResponse.imageURI);
+
+  return {
+    ttsAudioUrl: uploadResponse.imageURI,
+    text:req.body.text,
+    message: 'Text-to-speech audio generated successfully.',
+  };
+};
+
 module.exports = {
   pushNotification,
   getNotification,
   markNotificationAsRead,
-  speechToText
+  speechToText,
+  textToSpeech
 };
