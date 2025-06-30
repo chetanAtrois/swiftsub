@@ -70,4 +70,7 @@ module.exports = {
   firebase: {
     apikey: envVars.FIREBASE_API_KEY
   },
+  environment:{
+    openApiKey: process.env.OPEN_API_KEY,
+  }
 };

@@ -14,9 +14,15 @@ const sendPushNotification = catchAsync(async (req, res) => {
     const notificationData = await commonService.markNotificationAsRead(req);
     res.status(200).send({ success: true, notificationData });
   });
+  const speechToText = catchAsync(async (req, res) => {
+    const convertedData = await commonService.speechToText(req);
+    res.status(200).send({ success: true, convertedData });
+  });
+
 
   module.exports = {
     sendPushNotification,
     getNotification,
-    markNotificationAsRead
+    markNotificationAsRead,
+    speechToText
   }

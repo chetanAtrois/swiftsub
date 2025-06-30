@@ -17,7 +17,7 @@ const mapReportData = (req, data, imageURIs, fileData) => {
   const report = {
     userId: userId,
     createdBy: loggedInUserId,
-    updatedBy: loggedInUserId, // Initially both will be same
+    updatedBy: loggedInUserId, 
     isCompleted: false,
     title: data.body.title,
     companyName: data.body.companyName,

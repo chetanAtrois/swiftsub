@@ -3,6 +3,13 @@ const Notification = require('../models/notification.model');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
 const User = require('../models/user.model');
+const subAdmin = require('../models/subAdmin.model');
+const fs = require('fs');
+const { OpenAI } = require('openai');
+const {uploadFile} = require('../config/upload-image'); // adjust path to your upload logic
+const openai = new OpenAI({ apiKey: process.env.OPEN_API_KEY });
+const path = require('path');
+const { exec } = require('child_process');
 
 const pushNotification = async (req) => {
   const {
@@ -19,7 +26,10 @@ const pushNotification = async (req) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Receiver ID and user type are required');
   }
 
-  const receiver = await User.findById(receiverId);
+  let receiver = await User.findById(receiverId).lean();
+    if(!receiver){
+      receiver = await subAdmin.findById(receiverId).lean();
+    }
   if (!receiver || typeof receiver.fcmToken !== 'string' || !receiver.fcmToken.trim()) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'FCM token not found for the receiver');
   }
@@ -99,8 +109,73 @@ const markNotificationAsRead = async (req) => {
 };
 
 
+
+
+const speechToText = async (req) => {
+  console.log("🎙️ Starting speech to text processing...");
+
+  const audio = req.files?.file?.[0];
+  if (!audio) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Audio file is required');
+  }
+
+  const originalPath = audio.path;
+  const convertedPath = path.join(__dirname, '..', 'temp', `${Date.now()}.mp3`);
+
+  console.log("📁 Received file:", audio.originalname);
+  console.log("🔄 Converting file with ffmpeg...");
+
+  // Convert to mp3 with ffmpeg
+  await new Promise((resolve, reject) => {
+    exec(
+      `ffmpeg -i "${originalPath}" -ar 16000 -ac 1 -c:a libmp3lame "${convertedPath}"`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error("❌ FFmpeg error:", stderr);
+          return reject(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to convert audio'));
+        }
+        console.log("✅ Audio converted successfully");
+        resolve();
+      }
+    );
+  });
+
+  console.log("⬆️ Uploading audio to S3...");
+  const uploadResponse = await uploadFile(
+    { path: convertedPath, originalname: audio.originalname, filename: path.basename(convertedPath) },
+    'speech/audio'
+  );
+
+  if (!uploadResponse.success) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to upload file');
+  }
+
+  const audioUrl = uploadResponse.imageURI;
+  console.log("✅ Audio uploaded to S3:", audioUrl);
+
+  console.log("🧠 Sending audio to OpenAI Whisper for transcription...");
+  const transcription = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(convertedPath),
+    model: 'whisper-1',
+    response_format: 'json',
+  });
+
+  console.log("📝 Transcription done:", transcription.text);
+
+  // Cleanup
+  fs.unlink(originalPath, () => {});
+  fs.unlink(convertedPath, () => {});
+
+  return {
+    audioUrl,
+    transcript: transcription.text,
+    message: 'Transcription completed successfully.',
+  };
+};
+
 module.exports = {
   pushNotification,
   getNotification,
-  markNotificationAsRead
+  markNotificationAsRead,
+  speechToText
 };
