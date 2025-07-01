@@ -519,7 +519,8 @@ const userCheckOut = async (req) => {
     return ({
       allowedCheckInTime: policy.allowedCheckInTime,
       allowedCheckOutTime:policy.allowedCheckOutTime,
-      date: policy.date
+      date: policy.date,
+      passcode:policy.passcode
     });
   };
 

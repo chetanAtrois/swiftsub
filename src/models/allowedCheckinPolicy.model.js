@@ -17,6 +17,10 @@ const allowedCheckinPolicySchema = new mongoose.Schema({
     type: String, 
     required: true
   },
+  passcode:{
+    type: String, 
+    required: false
+  }
 
 }, {
   timestamps: true

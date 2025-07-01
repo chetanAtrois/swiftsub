@@ -119,6 +119,7 @@ const getUserByPhoneNumber = async (req) => {
   user = await subAdmin.findOne({phoneNumber:phoneNumber})}
     return user;
 };
+
 const getUsersById = async (req) => {
   const userExist = await User.findOne({ _id: req.user._id });
   if (!userExist) {
