@@ -16,6 +16,7 @@ const mapReportData = (req, data, fileData) => {
     startWorkingHour: data.body.startWorkingHour,
     endWorkingHour: data.body.endWorkingHour,
     durationOfTask:data.body.durationOfTask,
+    text:data.body.text,
     status:data.body.status ,
     file: {
       type: fileData.type,
@@ -42,7 +43,8 @@ const updateTask = async (req, fileData) => {
     endWorkingHour,
     durationOfTask,
     file,
-    status
+    status,
+    text
   } = req.body;
 
   console.log(" [UpdateTask] Incoming request:");
@@ -57,7 +59,8 @@ const updateTask = async (req, fileData) => {
     endWorkingHour,
     durationOfTask,
     file,
-    status
+    status,
+    text
   });
 
   if (!taskId) throw new ApiError(400, 'taskId is required');
@@ -79,6 +82,8 @@ const updateTask = async (req, fileData) => {
   if (endWorkingHour) updates.endWorkingHour = endWorkingHour;
   if (durationOfTask) updates.durationOfTask = durationOfTask;
   if (status) updates.status = status;
+  if (text) updates.text = text;
+
 
   if (fileData) {
     updates.file = {
