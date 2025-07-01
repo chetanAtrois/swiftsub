@@ -54,6 +54,10 @@ const employeeActvitySchema = new mongoose.Schema({
     type: Number,
     required: false
   },
+  passcode:{
+    type: String,
+    required: false
+  },
   alarmLogs: [
     {
       time: {

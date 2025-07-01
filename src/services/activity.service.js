@@ -10,10 +10,10 @@ const saveContactAfterCallModel = require('../models/saveContactAfterCall.model'
 const Permission = require('../models/permission.model');
 
 const userCheckIn = async (req) => {
-  const { adminCheckInTime, adminCheckOutTime, adminWorkingDate } = req.body;
+  const { adminCheckInTime, adminCheckOutTime, adminWorkingDate,passcode } = req.body;
 
-  if (!adminCheckInTime || !adminCheckOutTime || !adminWorkingDate) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Admin check-in, check-out, and date are required");
+  if (!adminCheckInTime || !adminCheckOutTime || !adminWorkingDate || !passcode) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Admin check-in, check-out,passcode, and date are required");
   }
 
   function combineDateAndTime(dateStr, timeStr) {
@@ -43,6 +43,7 @@ const userCheckIn = async (req) => {
   const newCheckIn = await employeeActivityModel.create({
     employeeId: req.user._id,
     checkInTime: now,
+    passcode:req.body.passcode,
     checkInTimeDifference: timeDifferenceInMinutes,
     checkInStatus,
     status: "checked-in",
@@ -329,15 +330,13 @@ const userCheckOut = async (req) => {
 
   const turnOffAlarm = async (req) => {
     const { activityId, passcode } = req.body;
-  
+    const activity = await employeeActivityModel.findOne({_id:activityId});
     if (!activityId) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Activity ID is required');
     }
   
-    const currentTime = new Date();
-    const predefinedPasscode = '666666'; 
-  
-    if (passcode !== predefinedPasscode) {
+    const currentTime = new Date();  
+    if (passcode !== activity.passcode) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Passcode does not match');
     }
   
