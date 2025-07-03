@@ -14,7 +14,7 @@ const UserLocationSchema = new mongoose.Schema({
       default: 'Point',
     },
     coordinates: {
-      type: [Number], 
+      type: [Number],
       required: true,
     },
   },
@@ -29,7 +29,7 @@ const UserLocationSchema = new mongoose.Schema({
         required: true,
       },
       isInside: {
-        type:Boolean 
+        type: Boolean,
       },
       timestamp: {
         type: Date,
@@ -39,7 +39,10 @@ const UserLocationSchema = new mongoose.Schema({
   ],
 });
 
+// ✅ Geo index for location
 UserLocationSchema.index({ location: '2dsphere' });
 
-const UserLocation = mongoose.model('UserLocation', UserLocationSchema);
+// ✅ Prevent OverwriteModelError
+const UserLocation = mongoose.models.UserLocation || mongoose.model('UserLocation', UserLocationSchema);
+
 module.exports = UserLocation;
