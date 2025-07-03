@@ -84,7 +84,6 @@ const updateTask = async (req, fileData) => {
   if (status) updates.status = status;
   if (text) updates.text = text;
 
-
   if (fileData) {
     updates.file = {
       url: fileData.url,  

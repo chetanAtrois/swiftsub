@@ -4,27 +4,14 @@ const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 
-const locationSchema = new mongoose.Schema({
-  coordinates: {
-    type: [Number], 
-    required: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
 const userSchema = mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: false,
       trim: true,
     },
-    companyName:{
-      type:String,
-      required:false
+    companyName: {
+      type: String,
     },
     email: {
       type: String,
@@ -39,12 +26,10 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: false,
       private: true,
     },
     phoneNumber: {
       type: String,
-      required: false,
       trim: true,
     },
     image: {
@@ -56,53 +41,46 @@ const userSchema = mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
-    companyPosition:{
-      type:String,
-      required:false
+    companyPosition: {
+      type: String,
     },
     method: {
       type: String,
       enum: ['google'],
-      default: undefined 
+      default: undefined,
     },
-    
     userType: {
       type: String,
       default: 'user',
       enum: ['user'],
       immutable: true,
     },
-    fcmToken:{
-      type:String,
-      default:null
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
     },
-    location: {
-      type: {
-        type: String,
-        enum: ['Point'],
-        default: 'Point',
-      },
-      coordinates: {
-        type: [Number],
-        default: [0, 0],
-      }
+    assignedAreaId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AssignedArea',
+      default: null,
     },
-  
-    lastUpdated: Date,
-  
-    locationHistory: {
-      type: [locationSchema],
-      default: []
-    }
+    fcmToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
-userSchema.index({ location: '2dsphere' });
+
+// Remove location index
+// userSchema.index({ location: '2dsphere' }); ❌
+
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
 
+// Static methods
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
   return !!user;
@@ -113,21 +91,18 @@ userSchema.statics.isPhoneNumberTaken = async function (phoneNumber, excludeUser
   return !!user;
 };
 
+// Password match
 userSchema.methods.isPasswordMatch = async function (password) {
-  const user = this;
-  return bcrypt.compare(password, user.password);
+  return bcrypt.compare(password, this.password);
 };
 
+// Password hash middleware
 userSchema.pre('save', async function (next) {
-  const user = this;
-  
-  if (user.isModified('password') && user.password) {
-    user.password = await bcrypt.hash(user.password, 8);
+  if (this.isModified('password') && this.password) {
+    this.password = await bcrypt.hash(this.password, 8);
   }
   next();
 });
 
-
 const User = mongoose.model('User', userSchema);
-
 module.exports = User;

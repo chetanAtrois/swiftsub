@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const mongoose = require('mongoose');
 const Admin = require('../models/admin.model')
 const employeeActivityModel = require('../models/employeeActivity.model');
 const ApiError = require('../utils/ApiError');
@@ -8,6 +9,9 @@ const Contact = require('../models/contact.model');
 const AllowedCheckinPolicy = require('../models/allowedCheckinPolicy.model')
 const saveContactAfterCallModel = require('../models/saveContactAfterCall.model');
 const Permission = require('../models/permission.model');
+const UserLocation = require('../models/location.model');
+const AssignedArea = require('../models/assignedArea.model');
+
 
 const userCheckIn = async (req) => {
   const { adminCheckInTime, adminCheckOutTime, adminWorkingDate,passcode } = req.body;
@@ -159,46 +163,54 @@ const userCheckOut = async (req) => {
     };
   };
   
-  const updateLocation = async (req) => {
-    const { userId, latitude, longitude } = req.body;
-    if (!userId || latitude == null || longitude == null) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
-    }
-    const timestamp = new Date();
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        location: {
-          type: 'Point',
-          coordinates: [longitude, latitude],
-        },
-        lastUpdated: timestamp,
-        $push: {
-          locationHistory: {
-            $each: [{
-              coordinates: [longitude, latitude],
-              timestamp: timestamp
-            }],
-            $slice: -120,
-          },
-        },
-      },
-      { new: true }
-    );
-    const formattedUser = {
-      ...updatedUser.toObject(),
+
+const updateLocation = async (req) => {
+  const { userId, latitude, longitude } = req.body;
+
+  if (!userId || latitude == null || longitude == null) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
+  }
+
+  const timestamp = new Date();
+
+  const updatedUser = await UserLocation.findOneAndUpdate(
+    { userId: new mongoose.Types.ObjectId(userId) }, // ✅ fix here
+    {
       location: {
-        latitude: updatedUser.location.coordinates[1],
-        longitude: updatedUser.location.coordinates[0]
+        type: 'Point',
+        coordinates: [longitude, latitude],
       },
-      locationHistory: updatedUser.locationHistory.map(loc => ({
-        latitude: loc.coordinates[1],
-        longitude: loc.coordinates[0],
-        timestamp: loc.timestamp
-      }))
-    };
-    return formattedUser;
+      lastUpdated: timestamp,
+      $push: {
+        locationHistory: {
+          $each: [{
+            coordinates: [longitude, latitude],
+            timestamp: timestamp
+          }],
+          $slice: -120,
+        },
+      },
+    },
+    { new: true, upsert: true } // ✅ create if not exists
+  );
+
+  const formattedUser = {
+    ...updatedUser.toObject(),
+    location: {
+      latitude: updatedUser.location.coordinates[1],
+      longitude: updatedUser.location.coordinates[0]
+    },
+    locationHistory: updatedUser.locationHistory.map(loc => ({
+      latitude: loc.coordinates[1],
+      longitude: loc.coordinates[0],
+      timestamp: loc.timestamp
+    }))
   };
+
+  return formattedUser;
+};
+
+  
   
   const getLocationHistory = async (req) => {
     const { userId } = req.query;
@@ -206,7 +218,7 @@ const userCheckOut = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required");
     }
   
-    const user = await User.findById(userId).select("locationHistory");
+    const user = await UserLocation.findById(userId).select("locationHistory");
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
@@ -261,7 +273,7 @@ const userCheckOut = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid date format. Use yyyy-mm-dd");
     }
   
-    const user = await User.findById(userId).select("locationHistory");
+    const user = await UserLocation.findById(userId).select("locationHistory");
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
@@ -303,7 +315,7 @@ const userCheckOut = async (req) => {
     const targetDate = new Date(date);
     const nextDate = new Date(targetDate);
     nextDate.setDate(targetDate.getDate() + 1);
-    const user = await User.findById(userId).select('locationHistory');
+    const user = await UserLocation.findById(userId).select('locationHistory');
   
     if (!user || !user.locationHistory) {
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found or no location history');
