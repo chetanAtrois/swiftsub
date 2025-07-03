@@ -1,42 +1,35 @@
 const mongoose = require('mongoose');
 
-const UserLocationSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true,
-  },
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
+const AssignedAreaSchema = new mongoose.Schema(
+  {
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'subAdmin', // optional
     },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
+    userId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // optional
+    },
+    polygon: {
+      type: {
+        type: String,
+        enum: ['Polygon'],
+        default: 'Polygon',
+      },
+      coordinates: {
+        type: [[[Number]]], // [ [ [lng, lat], [lng, lat], ... ] ]
+        required: true,
+      },
+    },
+    validForDate: {
+      type: String, // format: "YYYY-MM-DD"
       required: true,
     },
   },
-  lastUpdated: {
-    type: Date,
-    default: Date.now,
-  },
-  locationHistory: [
-    {
-      coordinates: {
-        type: [Number],
-        required: true,
-      },
-      timestamp: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
-});
+  { timestamps: true }
+);
 
-UserLocationSchema.index({ location: '2dsphere' });
+AssignedAreaSchema.index({ polygon: '2dsphere' });
 
-const UserLocation = mongoose.model('UserLocation', UserLocationSchema);
-module.exports = UserLocation;
+const AssignedArea = mongoose.model('AssignedArea', AssignedAreaSchema);
+module.exports = AssignedArea;
