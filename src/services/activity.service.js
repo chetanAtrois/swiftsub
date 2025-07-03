@@ -218,7 +218,7 @@ const updateLocation = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required");
     }
   
-    const user = await UserLocation.findById(userId).select("locationHistory");
+    const user = await UserLocation.findOne({userId}).select("locationHistory");
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
@@ -273,7 +273,7 @@ const updateLocation = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid date format. Use yyyy-mm-dd");
     }
   
-    const user = await UserLocation.findById(userId).select("locationHistory");
+    const user = await UserLocation.findOne({userId}).select("locationHistory");
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
@@ -315,7 +315,7 @@ const updateLocation = async (req) => {
     const targetDate = new Date(date);
     const nextDate = new Date(targetDate);
     nextDate.setDate(targetDate.getDate() + 1);
-    const user = await UserLocation.findById(userId).select('locationHistory');
+    const user = await UserLocation.findOne({userId}).select('locationHistory');
   
     if (!user || !user.locationHistory) {
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found or no location history');
