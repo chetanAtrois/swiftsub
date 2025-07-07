@@ -11,6 +11,7 @@ const saveContactAfterCallModel = require('../models/saveContactAfterCall.model'
 const Permission = require('../models/permission.model');
 const UserLocation = require('../models/location.model');
 const AssignedArea = require('../models/assignedArea.model');
+const turf = require('@turf/turf');
 
 
 const userCheckIn = async (req) => {
@@ -164,52 +165,72 @@ const userCheckOut = async (req) => {
   };
   
 
-const updateLocation = async (req) => {
-  const { userId, latitude, longitude } = req.body;
-
-  if (!userId || latitude == null || longitude == null) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "please give proper valid data");
-  }
-
-  const timestamp = new Date();
-
-  const updatedUser = await UserLocation.findOneAndUpdate(
-    { userId: new mongoose.Types.ObjectId(userId) }, // ✅ fix here
-    {
-      location: {
-        type: 'Point',
-        coordinates: [longitude, latitude],
-      },
-      lastUpdated: timestamp,
-      $push: {
-        locationHistory: {
-          $each: [{
-            coordinates: [longitude, latitude],
-            timestamp: timestamp
-          }],
-          $slice: -120,
+  const updateLocation = async (req) => {
+    const { userId, latitude, longitude } = req.body;
+  
+    if (!userId || latitude == null || longitude == null) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Please provide valid data");
+    }
+  
+    const user = await User.findById(userId).populate('assignedAreaId');
+    if (!user || !user.assignedAreaId) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User or assigned area not found");
+    }
+  
+    const assignedPolygon = user.assignedAreaId.polygon;
+    const userPoint = turf.point([longitude, latitude]);
+    const areaPolygon = turf.polygon(assignedPolygon.coordinates);
+    const isInside = turf.booleanPointInPolygon(userPoint, areaPolygon);
+  
+    const timestamp = new Date();
+  
+    const updatedUser = await UserLocation.findOneAndUpdate(
+      { userId: new mongoose.Types.ObjectId(userId) },
+      {
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        lastUpdated: timestamp,
+        $push: {
+          locationHistory: {
+            $each: [{
+              coordinates: [longitude, latitude],
+              timestamp: timestamp,
+              isInside: isInside
+            }],
+            $slice: -120,
+          },
         },
       },
-    },
-    { new: true, upsert: true } // ✅ create if not exists
-  );
-
-  const formattedUser = {
-    ...updatedUser.toObject(),
-    location: {
-      latitude: updatedUser.location.coordinates[1],
-      longitude: updatedUser.location.coordinates[0]
-    },
-    locationHistory: updatedUser.locationHistory.map(loc => ({
-      latitude: loc.coordinates[1],
-      longitude: loc.coordinates[0],
-      timestamp: loc.timestamp
-    }))
+      { new: true, upsert: true }
+    );
+  
+    // ✅ Safely handle if UserLocation was newly created (null handling)
+    if (!updatedUser) {
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to update location");
+    }
+  
+    const formattedUser = {
+      userId: updatedUser.userId,
+      location: {
+        latitude: updatedUser.location.coordinates[1],
+        longitude: updatedUser.location.coordinates[0],
+        isInsideAssignedArea: isInside
+      },
+      locationHistory: updatedUser.locationHistory.map(loc => ({
+        latitude: loc.coordinates[1],
+        longitude: loc.coordinates[0],
+        timestamp: loc.timestamp,
+        isInside: loc.isInside ?? null
+      })),
+      
+    };
+  
+    return formattedUser;
   };
-
-  return formattedUser;
-};
-
+  
+  
   
   
   const getLocationHistory = async (req) => {
