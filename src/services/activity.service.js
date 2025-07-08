@@ -172,15 +172,22 @@ const userCheckOut = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Please provide valid data");
     }
   
-    const user = await User.findById(userId).populate('assignedAreaId');
-    // if (!user || !user.assignedAreaId) {
-    //   throw new ApiError(httpStatus.NOT_FOUND, "User or assigned area not found");
-    // }
+    let isInside = null; // default: null means no assigned area
   
-    const assignedPolygon = user.assignedAreaId.polygon;
-    const userPoint = turf.point([longitude, latitude]);
-    const areaPolygon = turf.polygon(assignedPolygon.coordinates);
-    const isInside = turf.booleanPointInPolygon(userPoint, areaPolygon);
+    // ✅ Find user and check if an assigned area exists
+    const user = await User.findById(userId).populate('assignedAreaId');
+  
+    if (user?.assignedAreaId?.polygon) {
+      try {
+        const assignedPolygon = user.assignedAreaId.polygon;
+        const userPoint = turf.point([longitude, latitude]);
+        const areaPolygon = turf.polygon(assignedPolygon.coordinates);
+        isInside = turf.booleanPointInPolygon(userPoint, areaPolygon);
+      } catch (err) {
+        console.warn("Failed to compute isInside:", err.message);
+        isInside = null; // fallback if something fails
+      }
+    }
   
     const timestamp = new Date();
   
@@ -196,8 +203,8 @@ const userCheckOut = async (req) => {
           locationHistory: {
             $each: [{
               coordinates: [longitude, latitude],
-              timestamp: timestamp,
-              isInside: isInside
+              timestamp,
+              isInside
             }],
             $slice: -120,
           },
@@ -206,7 +213,6 @@ const userCheckOut = async (req) => {
       { new: true, upsert: true }
     );
   
-    // ✅ Safely handle if UserLocation was newly created (null handling)
     if (!updatedUser) {
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to update location");
     }
@@ -224,7 +230,6 @@ const userCheckOut = async (req) => {
         timestamp: loc.timestamp,
         isInside: loc.isInside ?? null
       })),
-      
     };
   
     return formattedUser;
