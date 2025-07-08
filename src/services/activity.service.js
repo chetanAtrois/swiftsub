@@ -173,9 +173,9 @@ const userCheckOut = async (req) => {
     }
   
     const user = await User.findById(userId).populate('assignedAreaId');
-    if (!user || !user.assignedAreaId) {
-      throw new ApiError(httpStatus.NOT_FOUND, "User or assigned area not found");
-    }
+    // if (!user || !user.assignedAreaId) {
+    //   throw new ApiError(httpStatus.NOT_FOUND, "User or assigned area not found");
+    // }
   
     const assignedPolygon = user.assignedAreaId.polygon;
     const userPoint = turf.point([longitude, latitude]);
