@@ -462,31 +462,38 @@ const userCheckOut = async (req) => {
   const saveContact = async (req) => {
     const user = await User.findById(req.user._id);
     if (!user) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
+      throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
     }
   
-    if (!Array.isArray(req.body.contacts) || req.body.contacts.length === 0) {
+    const incomingContacts = req.body.contacts;
+    if (!Array.isArray(incomingContacts) || incomingContacts.length === 0) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'No contacts provided');
     }
   
-    const cleanedContacts = req.body.contacts.map(contact => {
-      const cleaned = {};
-      Object.keys(contact).forEach(key => {
-        if (contact[key] !== '') {
-          cleaned[key] = contact[key];
-        }
-      });
-      return cleaned;
+    const existing = await Contact.findOne({ employeeId: user._id });
+  
+    const existingPhones = existing?.contactDetails?.map(c => c.phone) || [];
+  
+    const uniqueNewContacts = incomingContacts.filter((contact) => {
+      return !existingPhones.includes(contact.phone);
     });
+  
+    if (uniqueNewContacts.length === 0) {
+      return { message: 'No new contacts to add' };
+    }
   
     const updated = await Contact.findOneAndUpdate(
       { employeeId: user._id },
-      { $push: { contactDetails: { $each: cleanedContacts } } },
+      { $push: { contactDetails: { $each: uniqueNewContacts } } },
       { upsert: true, new: true }
     );
   
-    return { contactDetails: updated.contactDetails };
+    return {
+      added: uniqueNewContacts.length,
+      total: updated.contactDetails.length
+    };
   };
+  
   
 
   const saveContactAfterCall = async (req) => {
