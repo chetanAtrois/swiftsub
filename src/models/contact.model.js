@@ -1,32 +1,22 @@
 const mongoose = require('mongoose');
-const contactSchema = new mongoose.Schema({
-    employeeId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-    },
-    contactDetails:[{
-        contactName:{
-            type:String,
-            required:false
-        },
-        contactNumber:{
-            type:String,
-            required:false
-        },
-        contactNote:{
-            type:String,
-            required:false
-        },
-        contactEmail:{
-            type:String,
-            required:false
-        }
-    }],
-    createdAt: {
-        type: Date,
-        default: Date.now,
-      },
+const { Schema } = mongoose;
+
+const contactSchema = new Schema({
+  employeeId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  contactDetails: [
+    {
+      type: Schema.Types.Mixed // ✅ This works now
+    }
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
-const contact = mongoose.model('Contact', contactSchema);
-module.exports = contact;
+
+const Contact = mongoose.model('Contact', contactSchema);
+module.exports = Contact;

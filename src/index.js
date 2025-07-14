@@ -7,11 +7,9 @@ require('./config/chrone');
 let port;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
-  // server = app.listen(config.port, () => {
-  //   logger.info(`Listening to port ${config.port}`);
-  // });
+
   port = config.port || 3001;
-  app.listen(port, () => console.log('listening on port ${config.port}'));
+  app.listen(port, () => console.log(`listening on port ${config.port}`));
 });
 
 const exitHandler = () => {

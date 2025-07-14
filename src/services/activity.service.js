@@ -460,37 +460,35 @@ const userCheckOut = async (req) => {
   };
 
   const saveContact = async (req) => {
-    const user = await User.findOne({
-      _id:req.user._id
-    })
-    console.log("userId",user);
-  
+    const user = await User.findById(req.user._id);
     if (!user) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
     }
   
-    const contactEntry = {
-      contactName: req.body.contactName,
-      contactNumber: req.body.contactNumber,
-      contactNote: req.body.contactNote,
-      contactEmail: req.body.contactEmail
-    };
-    Object.keys(req.body).forEach((key) => {
-      if (req.body[key] === '') {
-        delete req.body[key];
-      }
+    if (!Array.isArray(req.body.contacts) || req.body.contacts.length === 0) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No contacts provided');
+    }
+  
+    const cleanedContacts = req.body.contacts.map(contact => {
+      const cleaned = {};
+      Object.keys(contact).forEach(key => {
+        if (contact[key] !== '') {
+          cleaned[key] = contact[key];
+        }
+      });
+      return cleaned;
     });
-    await Contact.findOneAndUpdate(
+  
+    const updated = await Contact.findOneAndUpdate(
       { employeeId: user._id },
-      {
-        $push: { contactDetails: contactEntry }
-      },
-      { upsert: true, new: true } 
+      { $push: { contactDetails: { $each: cleanedContacts } } },
+      { upsert: true, new: true }
     );
-    return {
-      contactDetails: contactEntry
-    };
+  
+    return { contactDetails: updated.contactDetails };
   };
+  
+
   const saveContactAfterCall = async (req) => {
     const user = await User.findOne({
       _id:req.user._id

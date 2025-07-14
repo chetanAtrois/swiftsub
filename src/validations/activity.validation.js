@@ -39,14 +39,14 @@ const createNote = {
         description:Joi.string().required()
     })
 };
-const saveContact = {
-    body:Joi.object().keys({
-        contactNumber:Joi.string().required(),
-        contactName:Joi.string().required(),
-        contactNote:Joi.string().optional(),
-        contactEmail: Joi.string().email().allow(''),
-    })
-};
+// const saveContact = {
+//     body:Joi.object().keys({
+//         contactNumber:Joi.string().required(),
+//         contactName:Joi.string().required(),
+//         contactNote:Joi.string().optional(),
+//         contactEmail: Joi.string().email().allow(''),
+//     })
+// };
 const saveContactAfterCall = {
     body:Joi.object().keys({
         contactNumber:Joi.string().required(),
@@ -89,7 +89,7 @@ module.exports = {
     autoAlarmOff,
     createNote,
     getNote,
-    saveContact,
+    // saveContact,
     getContact,
     getLocationByDate,
     getCheckinPolicyTime,
