@@ -470,44 +470,45 @@ const userCheckOut = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, 'No contacts provided');
     }
   
-    // ✅ Normalize phone numbers by removing non-digit characters and leading country codes like +91
+    // Normalize phone number
     const normalizePhone = (phone) => {
+      if (!phone || typeof phone !== 'string') return '';
       return phone.replace(/\D/g, '').replace(/^91/, '');
     };
   
     const existing = await Contact.findOne({ employeeId: user._id });
   
-    // ✅ Get all normalized phone numbers already saved
     const existingPhones = existing?.contactDetails?.map(c => normalizePhone(c.phone)) || [];
   
-    // ✅ Filter only new (not already existing) normalized contacts
-    const uniqueNewContacts = incomingContacts.filter((contact) => {
-      const normalized = normalizePhone(contact.phone);
-      return !existingPhones.includes(normalized);
-    });
+    // Extract phone from phoneNumbers array safely
+    const uniqueNewContacts = incomingContacts
+      .map((contact) => {
+        const rawPhone = Array.isArray(contact.phoneNumbers) ? contact.phoneNumbers[0] : contact.phoneNumbers;
+        const normalized = normalizePhone(rawPhone);
+        if (!normalized || existingPhones.includes(normalized)) return null;
+        return {
+          ...contact,
+          phone: normalized,
+        };
+      })
+      .filter(Boolean); // remove nulls
   
     if (uniqueNewContacts.length === 0) {
       return { message: 'No new contacts to add' };
     }
   
-    // ✅ Normalize contact phones before saving
-    const normalizedContactsToAdd = uniqueNewContacts.map((contact) => ({
-      ...contact,
-      phone: normalizePhone(contact.phone),
-    }));
-  
-    // ✅ Update database with new normalized contacts
     const updated = await Contact.findOneAndUpdate(
       { employeeId: user._id },
-      { $push: { contactDetails: { $each: normalizedContactsToAdd } } },
+      { $push: { contactDetails: { $each: uniqueNewContacts } } },
       { upsert: true, new: true }
     );
   
     return {
-      added: normalizedContactsToAdd.length,
+      added: uniqueNewContacts.length,
       total: updated.contactDetails.length,
     };
   };
+  
   
   
   
