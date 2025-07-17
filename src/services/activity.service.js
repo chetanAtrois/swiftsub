@@ -470,32 +470,47 @@ const userCheckOut = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, 'No contacts provided');
     }
   
+    // ✅ Normalize phone numbers by removing non-digit characters and leading country codes like +91
+    const normalizePhone = (phone) => {
+      return phone.replace(/\D/g, '').replace(/^91/, '');
+    };
+  
     const existing = await Contact.findOne({ employeeId: user._id });
   
-    const existingPhones = existing?.contactDetails?.map(c => c.phone) || [];
+    // ✅ Get all normalized phone numbers already saved
+    const existingPhones = existing?.contactDetails?.map(c => normalizePhone(c.phone)) || [];
   
+    // ✅ Filter only new (not already existing) normalized contacts
     const uniqueNewContacts = incomingContacts.filter((contact) => {
-      return !existingPhones.includes(contact.phone);
+      const normalized = normalizePhone(contact.phone);
+      return !existingPhones.includes(normalized);
     });
   
     if (uniqueNewContacts.length === 0) {
       return { message: 'No new contacts to add' };
     }
   
+    // ✅ Normalize contact phones before saving
+    const normalizedContactsToAdd = uniqueNewContacts.map((contact) => ({
+      ...contact,
+      phone: normalizePhone(contact.phone),
+    }));
+  
+    // ✅ Update database with new normalized contacts
     const updated = await Contact.findOneAndUpdate(
       { employeeId: user._id },
-      { $push: { contactDetails: { $each: uniqueNewContacts } } },
+      { $push: { contactDetails: { $each: normalizedContactsToAdd } } },
       { upsert: true, new: true }
     );
   
     return {
-      added: uniqueNewContacts.length,
-      total: updated.contactDetails.length
+      added: normalizedContactsToAdd.length,
+      total: updated.contactDetails.length,
     };
   };
   
   
-
+  
   const saveContactAfterCall = async (req) => {
     const user = await User.findOne({
       _id:req.user._id
@@ -506,14 +521,14 @@ const userCheckOut = async (req) => {
       throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
     }
   
-    const contactEntry = {
-      contactName: req.body.contactName,
-      contactNumber: req.body.contactNumber,
-      contactNote: req.body.contactNote,
-      contactEmail: req.body.contactEmail,
-      contactCompanyName: req.body.contactCompanyName,
-      contactProfile: req.body.contactProfile,
-      purpose: req.body.purpose,
+  const contactEntry = {
+    contactName: req.body.contactName,
+    contactNumber: req.body.contactNumber,
+    contactNote: req.body.contactNote,
+    contactEmail: req.body.contactEmail,
+    contactCompanyName: req.body.contactCompanyName,
+    contactProfile: req.body.contactProfile,
+    purpose: req.body.purpose,
     };
     Object.keys(req.body).forEach((key) => {
       if (req.body[key] === '') {
