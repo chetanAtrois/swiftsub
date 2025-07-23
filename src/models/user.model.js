@@ -6,12 +6,14 @@ const { roles } = require('../config/roles');
 
 const userSchema = mongoose.Schema(
   {
-    fullName: {
+    firstName: {
       type: String,
       trim: true,
+      required: true
     },
-    companyName: {
+    lastName: {
       type: String,
+      required: true
     },
     email: {
       type: String,
@@ -28,41 +30,53 @@ const userSchema = mongoose.Schema(
       type: String,
       private: true,
     },
-    phoneNumber: {
+    dateOfBirth: {
       type: String,
-      trim: true,
+      required: true,
     },
-    image: {
-      type: String,
-      default: null,
-    },
-    role: {
-      type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
-    },
-    companyPosition: {
+    location: {
       type: String,
     },
-    method: {
+    ethnicity: {
       type: String,
-      enum: ['google'],
-      default: undefined,
+    },
+    language: [{
+      type: String,
+      default: 'english'
+    }],
+    education: {
+      type: String,
+    },
+    personality: [
+      {
+        type: String,
+      }
+    ],
+    interests: [{
+      type: String,
+    }],
+    profession: {
+      type: String,
+    },
+    religion: {
+      type: String,
+    },
+    martialStatus: {
+      type: String,
+    },
+    hangout: {
+      type: String,
+    },
+    gender: {
+      type: String,
+      required: true,
+      enum: ['male', 'female', 'not to specify'],
+      default: 'null',
     },
     userType: {
       type: String,
       default: 'user',
       enum: ['user'],
-      immutable: true,
-    },
-    companyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Company',
-    },
-    assignedAreaId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'AssignedArea',
-      default: null,
     },
     fcmToken: {
       type: String,
@@ -73,14 +87,9 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-
-// Remove location index
-// userSchema.index({ location: '2dsphere' }); ❌
-
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
 
-// Static methods
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
   return !!user;
@@ -91,12 +100,10 @@ userSchema.statics.isPhoneNumberTaken = async function (phoneNumber, excludeUser
   return !!user;
 };
 
-// Password match
 userSchema.methods.isPasswordMatch = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-// Password hash middleware
 userSchema.pre('save', async function (next) {
   if (this.isModified('password') && this.password) {
     this.password = await bcrypt.hash(this.password, 8);

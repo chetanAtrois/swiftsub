@@ -6,75 +6,56 @@ const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
 const User = require('../models/user.model');
 const { responseMessage, userTypes } = require('../constant/constant');
-const Admin = require('../models/admin.model')
-const adminService = require('../services/admin.service');
-const Company = require('../models/company.model');
-const employeeActivityModel = require('../models/employeeActivity.model');
-const {uploadFile} = require('../config/upload-image');
-const subAdmin = require('../models/subAdmin.model');
 
 const register = async (userBody) => {
-  const { roleType, email, phoneNumber, method, password ,fcmToken} = userBody;
-  console.log("userBody",userBody);
-
-  const normalizedRole = roleType?.toLowerCase();
-  if (!['user', 'admin'].includes(normalizedRole)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid role type');
-  }
+  const { roleType, email, firstName, lastName, password, fcmToken, gender, dateOFBirth } = userBody;
+  console.log("userBody", userBody);
 
   const emailTakenInUser = await User.isEmailTaken(email);
-  const emailTakenInAdmin = await Admin.isEmailTaken(email);
-  if (emailTakenInUser || emailTakenInAdmin) {
-    const existingRole = emailTakenInUser ? 'user' : 'admin';
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `Email already registered as ${existingRole}`
-    );
+  if (emailTakenInUser) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `Email already registered as another user`);
   }
-
-  const phoneTakenInUser = await User.isPhoneNumberTaken(phoneNumber);
-  const phoneTakenInAdmin = await Admin.isPhoneNumberTaken(phoneNumber);
-  if (phoneTakenInUser || phoneTakenInAdmin) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
-  }
-
-  if (!method || method !== 'google') {
-    if (!password) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
-    }
-  }
-
+  // const phoneTakenInUser = await User.isPhoneNumberTaken(phoneNumber);
+  // if (phoneTakenInUser) {
+  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
+  // }
   const userData = {
     ...userBody,
-    role: normalizedRole,
-    userType: normalizedRole, 
-    fcmToken,
-    ...(method === 'google' && { password: undefined }), 
+    fcmToken
   };
 
-  const Model = normalizedRole === 'admin' ? Admin : User;
-  const newUser = await Model.create(userData);
+  const newUser = await User.create(userData);
   return newUser;
 };
 
-const login = async (userBody) => {
-  const { email, password, method, fcmToken } = userBody;
-  let user = await Admin.findOne({ email }) || await User.findOne({ email });
+const registerSecondStep = async (req, userBody) => {
+  const { userId } = req.query;
+  console.log("userId", userId);
+  console.log("userBody", userBody);
 
+  const user = await User.findOne({ _id: userId });
+  console.log("User", user);
+
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: userBody },
+    { new: true } // returns updated document
+  );
+
+  console.log("updatedBody", updatedUser);
+  return updatedUser;
+};
+
+const login = async (userBody) => {
+  const { email, password, fcmToken } = userBody;
+  let user = await User.findOne({ email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
-
-  if (method === 'google') {
-    if (user.method !== 'google') {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'This account requires password login');
-    }
-
-    user.fcmToken = fcmToken;
-    await user.save();
-    return user;
-  }
-
   if (!password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
   }
@@ -83,41 +64,24 @@ const login = async (userBody) => {
   if (!isPasswordCorrect) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
-
-  // ✅ Update FCM token for password login
   user.fcmToken = fcmToken;
   await user.save();
-
   return user;
-};
-
-
-
-const loginUserWithPhoneNumber = async (userBody) => {
-  const { phoneNumber, userType } = userBody;
-  const users =
-    userType === userTypes.USER
-      ? await userService.getUserByPhoneNumber(phoneNumber)
-      : await driverService.getDriverByPhoneNumber(phoneNumber);
-  if (!users) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, responseMessage.InCorrectContactNumber_MESSAGE);
-  }
-
-  return users;
 };
 
 const getUserByPhoneNumber = async (req) => {
   const userExist = await User.findOne({
-    _id:req.user._id
+    _id: req.user._id
   })
-  if(!userExist){
+  if (!userExist) {
     throw new Error('User does not exist')
   }
-  const {phoneNumber} = req.query;
-  let user = await User.findOne({phoneNumber:phoneNumber});
-  if(!user){
-  user = await subAdmin.findOne({phoneNumber:phoneNumber})}
-    return user;
+  const { phoneNumber } = req.query;
+  let user = await User.findOne({ phoneNumber: phoneNumber });
+  if (!user) {
+    user = await subAdmin.findOne({ phoneNumber: phoneNumber })
+  }
+  return user;
 };
 
 const getUsersById = async (req) => {
@@ -125,63 +89,37 @@ const getUsersById = async (req) => {
   if (!userExist) {
     throw new Error('User does not exist');
   }
-
   const id = req.body.id;
-
   if (!Array.isArray(id) || id.length === 0) {
     throw new Error('Please provide a valid array of user IDs in the body.');
   }
-
   const usersFromUser = await User.find({ _id: { $in: id } });
   const usersFromSubAdmin = await subAdmin.find({ _id: { $in: id } });
-
   const allUsers = [...usersFromUser, ...usersFromSubAdmin];
 
   return allUsers;
 };
 
 const logout = async (req) => {
-  const { refreshToken } = req.body;
-  const userId = req.user._id; 
-
+  const { refreshToken, email } = req.body;
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  const userId = user._id;
+  console.log("husdf", userId)
   const refreshTokenDoc = await Token.findOne({
     token: refreshToken,
     type: tokenTypes.REFRESH,
     blacklisted: false,
   });
-
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, responseMessage.NOT_FOUND);
   }
-
   await refreshTokenDoc.remove();
-  await User.findOneAndUpdate({_id: userId}, {$set: {fcmToken: null}});
-  const activeCheckIn = await employeeActivityModel.findOne({
-    employeeId: userId,
-    status: "checked-in",
-  });
-
-  if (activeCheckIn) {
-    const timeDiffInMilliseconds = new Date() - new Date(activeCheckIn.checkInTime);
-    const timeDiffInHours = timeDiffInMilliseconds / (1000 * 60 * 60);
-
-    await employeeActivityModel.findOneAndUpdate(
-      { _id: activeCheckIn._id },
-      {
-        $set: {
-          checkOutTime: new Date(),
-          timeDiffInHours,
-          status: "checked-out",
-        },
-      },
-      { new: true }
-    );
-  }
-
+  await User.findOneAndUpdate({ _id: userId }, { $set: { fcmToken: null } });
   return {
-    message: activeCheckIn
-      ? 'User checked out and logged out successfully'
-      : 'User logged out successfully',
+    message: 'User logged out successfully'
   };
 };
 
@@ -202,17 +140,15 @@ const refreshAuth = async (refreshToken) => {
 const resetPassword = async (resetPasswordToken, userBody) => {
   try {
     const { password, confirmNewPassword } = userBody;
-
     if (password !== confirmNewPassword) {
       throw new Error('Passwords do not match');
     }
-
     const resetPasswordTokenDoc = await tokenService.verifyToken(
       resetPasswordToken,
       tokenTypes.RESET_PASSWORD
     );
     console.log('Token Payload:', resetPasswordTokenDoc);
-    const userType = resetPasswordTokenDoc.userType; 
+    const userType = resetPasswordTokenDoc.userType;
     const user = await checkUserById(resetPasswordTokenDoc.user, userType);
     if (!user) {
       throw new Error(responseMessage.USER_NOT_FOUND);
@@ -250,8 +186,8 @@ const changePassword = async (req) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const userId = req.params.id;
-    const userRole = req.user; 
-    const userType = userRole.userType; 
+    const userRole = req.user;
+    const userType = userRole.userType;
     console.log('userRole', userRole);
     const user = await checkUserById(userId, userType);
     if (!user) {
@@ -273,14 +209,6 @@ const changePassword = async (req) => {
     throw new ApiError(httpStatus.BAD_REQUEST, err.message);
   }
 };
-const fetchCompanyList = async (req) => {
-  const { sortBy = 'createdAt', order = 'asc' } = req.query;
-  const sortOrder = order === 'desc' ? -1 : 1;
-
-  const companies = await Company.find().sort({ [sortBy]: sortOrder });
-  return companies;
-};
-
 
 const checkUserById = async (userId, role) => {
   let userData;
@@ -288,163 +216,34 @@ const checkUserById = async (userId, role) => {
     case userTypes.USER:
       userData = await userService.getUserById(userId);
       break;
-    case userTypes.ADMIN:
-      userData = await adminService.getAdminById(userId);
-      break;
     default:
       throw new Error("Invalid user type");
   }
 
   return userData;
 };
-
-
- const updateUserById = async (userId, role, password) => {
+const updateUserById = async (userId, role, password) => {
   let userData;
-   switch (role) {
-     case userTypes.USER:
-       userData = await userService.updateUserById(userId, password);
-       break;
-       case userTypes.ADMIN:
-       userData = await adminService.updateAdminById(userId, password);
-       break;
-       default:
+  switch (role) {
+    case userTypes.USER:
+      userData = await userService.updateUserById(userId, password);
+      break;
+    default:
       throw new Error("Invalid user type");
-   }
-   return userData;
- };
-
- const getUserProfile = async(req)=>{
-  const {userId} = req.query;
-  if(!userId){
-    throw new Error("UserId is required");
   }
-  const user = await User.findOne({_id:userId});
-  if(!user){
-    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
-  }
-  return{
-    user
-  }
- };
-
- const updateUser = async (requestBody) => {
-  const { userId } = requestBody.query;
-  const { body } = requestBody;
-
-  const user = await User.findOne({ _id: userId });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_FOUND);
-  }
-
-  if (body.email && body.email !== user.email) {
-    const emailTaken = await User.isEmailTaken(body.email);
-    if (emailTaken) {
-      throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
-    }
-  }
-
-  if (body.phoneNumber && body.phoneNumber !== user.phoneNumber) {
-    const numberTaken = await User.isPhoneNumberTaken(body.phoneNumber);
-    if (numberTaken) {
-      throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PHONE_NUMBER_ALREADY_TAKEN);
-    }
-  }
-
-  Object.keys(body).forEach((key) => {
-    if (body[key] === '') {
-      delete body[key];
-    }
-  });
-
-  const updatedUser = await User.findOneAndUpdate(
-    { _id: userId },
-    { ...body },
-    { new: true }
-  );
-
-  console.log('updatedUser', updatedUser);
-  return { updatedUser };
-};
-
-const uploaderImage = (req, imageURI) => {
-  const userId = req.user?._id;
-  if (!userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No user found');
-  }
-
-  return { userId, image: imageURI };
-};
-
-const uploadImage = async (req, imageURI) => {
-  const { userId, image } = uploaderImage(req, imageURI);
-
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    { image },
-    { new: true }
-  );
-
-  if (!updatedUser) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-
-  return updatedUser;
-};
-
-const uploadMedia = async (req,file, folder) => {
-  const user = await User.findOne({
-    _id: req.user._id
-  });
-  console.log("user",user)
-  if(!user){
-    throw new Error('no user Found')
-  }
-  const uploadResponse = await uploadFile(file, folder);
-
-  if (!uploadResponse?.success || !uploadResponse?.imageURI) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'File upload failed');
-  }
-
-  return {
-    userId:req.user._id,
-    fileURL: uploadResponse.imageURI,
-  };
-};
-const setPosition = async (req) => {
-  const userId = req.user._id;
-  const { position } = req.body;
-
-  const updatedPosition = await User.findByIdAndUpdate(
-    userId,
-    { companyPosition: position },
-    { new: true, runValidators: true }
-  );
-
-  return updatedPosition;
-};
-const getPosition = async(req)=>{
-  const {userId} = req.query;
-  const updatedPosition = await User.findOne({_id:userId}).select('companyPosition');
-  return updatedPosition;
+  return userData;
 };
 
 module.exports = {
   register,
+  registerSecondStep,
   login,
   logout,
   refreshAuth,
   resetPassword,
   verifyEmail,
   changePassword,
-  loginUserWithPhoneNumber,
-  fetchCompanyList,
-  getUserProfile,
-  updateUser,
-  uploadImage,
-  uploadMedia,
   getUserByPhoneNumber,
-  getUsersById,
-  setPosition,
-  getPosition
+  getUsersById
+  
 };

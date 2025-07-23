@@ -4,7 +4,6 @@ const config = require('../config/config');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 
-// Converts errors to ApiError format with proper status codes
 const errorConverter = (err, req, res, next) => {
   let error = err;
   if (!(error instanceof ApiError)) {
@@ -16,17 +15,15 @@ const errorConverter = (err, req, res, next) => {
   next(error);
 };
 
-// Handles all errors and sends appropriate responses
 const errorHandler = (err, req, res, next) => {
   let { statusCode, message } = err;
   
-  // In production, hide non-operational error details
   if (config.env === 'production' && !err.isOperational) {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message = httpStatus[httpStatus.INTERNAL_SERVER_ERROR];
   }
 
-  res.locals.errorMessage = err.message; // For morgan logging
+  res.locals.errorMessage = err.message; 
 
   const response = {
     code: statusCode,
@@ -34,7 +31,6 @@ const errorHandler = (err, req, res, next) => {
     ...(config.env === 'development' && { stack: err.stack }), // Include stacktrace in dev
   };
 
-  // Log full error in development
   if (config.env === 'development') {
     logger.error(err);
   }

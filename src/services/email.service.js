@@ -2,15 +2,12 @@ const nodemailer = require('nodemailer');
 const httpStatus = require('http-status');
 const config = require('../config/config');
 const logger = require('../config/logger');
-const { Otp } = require('../models');
+const  Otp  = require('../models/otpSent.model');
 const ApiError = require('../utils/ApiError');
 const jwt = require('jsonwebtoken');
-
-
-// Initialize SMTP transport
+const User = require('../models/user.model');
 const transport = nodemailer.createTransport(config.email.smtp);
 
-// Verify SMTP connection (skip in test environment)
 if (config.env !== 'test') {
   transport
     .verify()
@@ -18,12 +15,6 @@ if (config.env !== 'test') {
     .catch(() => logger.warn('Unable to connect to email server. Make sure you have configured the SMTP options in .env'));
 }
 
-/**
- * Base email sending function
- * @param {string} to - Recipient email
- * @param {string} subject - Email subject
- * @param {string} text - Plain text content
- */
 const sendEmail = async (to, subject, text) => {
   const msg = { from: config.email.from, to, subject, text };
   await transport.sendMail(msg);
@@ -49,20 +40,27 @@ const sendResetPasswordEmail = async (to, userID) => {
 };
 
 
-const sendVerificationEmail = async (to, token) => {
+const sendVerificationEmail = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Please provide correct email');
+  }
   const subject = 'Email Verification';
-  const verificationEmailUrl = `http://link-to-app/verify-email?token=${token}`;
   const code = Math.floor(1000 + Math.random() * 9000);
-
-  const text = `Dear user,
-To verify your email:
+  await Otp.create({
+    otp: code,
+    email: email,
+    method: 'verify Email',
+    lastOtpSentTime: new Date(),
+  });
+  const text = `Dear user, to verify your email:
 - Use this code: ${code}  
-- Or click: ${verificationEmailUrl}
-
 If you didn't create an account, please ignore this email.`;
-  
-  await sendEmail(to, subject, text);
+
+  await sendEmail(email, subject, text);
 };
+
+
 const verifyOtp = async (otp, email) => {
   const isOtpValid = await Otp.findOne({
     $and: [{ otp }, { email }],

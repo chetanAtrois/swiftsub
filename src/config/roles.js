@@ -1,24 +1,6 @@
 const allRoles = {
-  user: ['updateProfile'],
+  user: [],
   admin: [
-    'createUser',
-    'getUsers',
-    'addCompany',
-    'fetchCompanyList',
-    'registerAdmin',
-    'updateProfile',
-    'profileVerification',
-    'fetchUserList',
-    'updateAdminSetting',
-    'getUser-details',
-    'fetchAdminSetting',
-    'delete-user',
-    'password-change',
-    'profile-verified',
-    'deleteUser',
-    'updateUser',
-    'deleteCompany',
-    'updateCompany'
   ],
 };
 

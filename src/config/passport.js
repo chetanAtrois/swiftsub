@@ -1,7 +1,7 @@
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const config = require('./config');
 const { tokenTypes } = require('./tokens');
-const { User, Admin } = require('../models');
+const { User} = require('../models/user.model');
 
 const jwtOptions = {
   secretOrKey: config.jwt.secret,
@@ -17,9 +17,6 @@ const jwtVerify = async (payload, done) => {
     switch (payload.userType) {
       case 'user':
         user = await User.findById(payload.sub);
-        break;
-      case 'admin':
-        user = await Admin.findById(payload.sub);
         break;
       default:
         throw new Error('Invalid user type');

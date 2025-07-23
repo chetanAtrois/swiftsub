@@ -1,12 +1,12 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { authService, userService, tokenService, emailService } = require('../services');
+const authService = require('../services/auth.service');
+const tokenService = require('../services/token.service');
+const emailService = require('../services/email.service');
+const userService = require('../services/user.service');
 const { responseMessage, userTypes } = require('../constant/constant');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
-const Admin = require('../models/admin.model');
-const { uploadFile } = require('../config/upload-image');
-
 
 const register = catchAsync(async(req,res)=>{
   const {roleType} = req.body;
@@ -15,28 +15,26 @@ const register = catchAsync(async(req,res)=>{
   res.status(httpStatus.CREATED).send({success:true,user,token}) 
 });
 
+const registerSecondStep = catchAsync(async (req, res) => {
+  const user = await authService.registerSecondStep(req, req.body); // <-- pass req.body here
+  const token = await tokenService.generateAuthTokens(user, req.body.roleType);
+  res.status(httpStatus.CREATED).send({ success: true, user, token });
+});
+
 const login = catchAsync(async (req, res) => {
   const user = await authService.login(req.body);
   console.log('User returned from login:', user);
-
   const tokens = await tokenService.generateAuthTokens(
     user,
     user.role || 'user' 
   );
   console.log('User returned from login:', user);
-
   res.status(httpStatus.OK).send({ success: true, user, tokens });
 });
 
 const logout = catchAsync(async (req, res) => {
   const { message } = await authService.logout(req);
   res.status(httpStatus.OK).send({success: true,message});
-});
-
-const loginViaPhoneNumber = catchAsync(async (req, res) => {
-  const user = await authService.loginUserWithPhoneNumber(req.body);
-  const tokens = await tokenService.generateAuthTokens(user, req.body.userType);
-  res.status(httpStatus.OK).send({ success: true, user, tokens });
 });
 
 const refreshTokens = catchAsync(async (req, res) => {
@@ -46,16 +44,7 @@ const refreshTokens = catchAsync(async (req, res) => {
 
 const forgotPassword = catchAsync(async (req, res) => {
   const { email } = req.body;
-  let user = await User.findOne({ email }).select('fullName email _id method');
-  if (!user) {
-    user = await Admin.findOne({ email }).select('fullName email _id method');;
-  }
-  if (user.method === 'google') {
-    return res.status(httpStatus.BAD_REQUEST).send({
-      success: false,
-      message: 'Password reset is not available for Google sign-in accounts.',
-    });
-  }
+  let user = await User.findOne({ email });
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body);
   await emailService.sendResetPasswordEmail(email, resetPasswordToken);
   return res.status(httpStatus.OK).send({
@@ -80,9 +69,11 @@ const resetPassword = catchAsync(async (req, res) => {
 });
 
 const sendVerificationEmail = catchAsync(async (req, res) => {
-  const verifyEmailToken = await tokenService.generateVerifyEmailToken(req.user);
-  await emailService.sendVerificationEmail(req.user.email, verifyEmailToken);
-  res.status(httpStatus.NO_CONTENT).send();
+  await emailService.sendVerificationEmail(req.body.email);
+  return res.status(httpStatus.OK).send({
+    success: true,
+    message: responseMessage.OTP_SENT_MESSAGE
+  });
 });
 
 const verifyEmail = catchAsync(async (req, res) => {
@@ -98,102 +89,9 @@ const changePassword = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ success: true, userData });
 });
 
-const CompanyList = catchAsync(async (req, res) => {
-  const companyList = await authService.fetchCompanyList(req);
-  res.status(httpStatus.OK).send({ success: true, companyList });
-});
-
-const getUserProfile = catchAsync(async(req,res)=>{
-  const userList = await authService.getUserProfile(req);
-  res.status(httpStatus.OK).send({success:true,userList});
-});
-
-const updateUser = catchAsync(async(req,res)=>{
-  const updatedList = await authService.updateUser(req);
-  res.status(httpStatus.OK).send({success:true,updatedList});
-});
-
-const uploadUserProfileImage = catchAsync(async (req, res) => {
-  const files = req.files || {};
-  const imageFile = files.image?.[0];
-
-  if (!imageFile) {
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Image file is required.' });
-  }
-
-  const uploadResponse = await uploadFile(imageFile, 'users/profile-images');
-
-  if (!uploadResponse?.success || !uploadResponse?.imageURI) {
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Image upload failed.' });
-  }
-
-  const updatedUser = await authService.uploadImage(req, uploadResponse.imageURI);
-
-  res.status(httpStatus.OK).send({
-    success: true,
-    message: 'Profile image uploaded successfully.',
-    data: {
-      userId: updatedUser._id,
-      image: updatedUser.image
-    },
-  });
-});
-const uploadUserMedia = catchAsync(async (req, res) => {
-  const files = req.files || {};
-  const imageFile = files.image?.[0];
-  const audioFile = files.audio?.[0];
-  const otherFile = files.file?.[0]; 
-
-  const fileCount = [imageFile, audioFile, otherFile].filter(Boolean).length;
-  console.log("counter",fileCount);
-  if (fileCount !== 1) {
-    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Send only one file: image, audio, or other file (e.g., PDF).' });
-  }
-
-  const file = imageFile || audioFile || otherFile;
-  const folder = imageFile
-    ? 'chat/images'
-    : audioFile
-    ? 'chat/audios'
-    : 'chat/files';
-  const fileType = imageFile
-    ? 'image'
-    : audioFile
-    ? 'audio'
-    : 'file';
-
-  const uploadResult = await authService.uploadMedia(req, file, folder);
-
-  res.status(httpStatus.OK).send({
-    success: true,
-    message: `${fileType.charAt(0).toUpperCase() + fileType.slice(1)} uploaded successfully.`,
-    data: {
-      fileURL: uploadResult.fileURL,
-      fileType,
-      UserId: uploadResult.userId,
-    },
-  });
-});
-const getUserByPhoneNumber = catchAsync(async (req, res) => {
-  const user = await authService.getUserByPhoneNumber(req);
-  res.status(httpStatus.OK).send({ success: true, user });
-});
-const getUserById = catchAsync(async (req, res) => {
-  const user = await authService.getUsersById(req);
-  res.status(httpStatus.OK).send({ success: true, user });
-});
-const setPosition = catchAsync(async (req, res) => {
-  const user = await authService.setPosition(req);
-  res.status(httpStatus.OK).send({ success: true, user });
-});
-const getPosition = catchAsync(async (req, res) => {
-  const user = await authService.getPosition(req);
-  res.status(httpStatus.OK).send({ success: true, user });
-});
-
-
 module.exports = {
   register,
+  registerSecondStep,
   login,
   logout,
   refreshTokens,
@@ -203,14 +101,4 @@ module.exports = {
   verifyEmail,
   verifyOtp,
   changePassword,
-  loginViaPhoneNumber,
-  CompanyList,
-  getUserProfile,
-  updateUser,
-  uploadUserProfileImage,
-  uploadUserMedia,
-  getUserByPhoneNumber,
-  getUserById,
-  setPosition,
-  getPosition
 };

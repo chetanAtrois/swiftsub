@@ -1,4 +1,5 @@
 const responseMessage = {
+  
   RESET_PASSWORD_MESSAGE: 'password reset successfully',
   OTP_SENT_MESSAGE: 'otp sent successfully',
   WRONG_CREDENTIAL_MESSAGE: 'Incorrect email or password',
@@ -16,7 +17,6 @@ const responseMessage = {
 };
 
 const userTypes = {
-  USER: 'user',
-  ADMIN: 'admin'
+  USER: 'user'
 };
 module.exports = { responseMessage, userTypes };

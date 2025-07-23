@@ -3,8 +3,7 @@ const moment = require('moment');
 const httpStatus = require('http-status');
 const config = require('../config/config');
 const userService = require('./user.service');
-const adminService = require('./admin.service');
-const { Token } = require('../models');
+const  Token  = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
 const { userTypes } = require('../constant/constant');
@@ -33,8 +32,8 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 
 const verifyToken = async (token, type) => {
   try {
-    const payload = jwt.verify(token, config.jwt.secret);  // Decode the token
-    console.log('Decoded Token:', payload);  // Optional: Debug log
+    const payload = jwt.verify(token, config.jwt.secret);  
+    console.log('Decoded Token:', payload);  
 
     const tokenDoc = await Token.findOne({
       token,
@@ -47,7 +46,6 @@ const verifyToken = async (token, type) => {
       throw new Error('Token not found or it has been blacklisted');
     }
 
-    // ✅ Attach userType from payload to tokenDoc manually
     tokenDoc.userType = payload.userType;
 
     return tokenDoc;
@@ -55,8 +53,6 @@ const verifyToken = async (token, type) => {
     throw new Error('Token verification failed: ' + error.message);
   }
 };
-
-
 
 const generateAuthTokens = async (user, userType) => {
   console.log('suyeyee899', user);
@@ -99,20 +95,13 @@ const generateVerifyEmailToken = async (user) => {
 
 const checkUserByEmail = async (email) => {
   let userData = await userService.getUserByEmail(email);
-
-  // If user not found, check in admin
-  if (!userData) {
-    userData = await adminService.getAdminByEmail(email);
-    
     if (!userData) {
       throw new ApiError(
         httpStatus.NOT_FOUND,
-        'No user or admin found with this email'
+        'No user found with this email'
       );
     }
-  }
-
-  return userData; // Can be user or admin, based on where found
+  return userData; 
 };
 
 
