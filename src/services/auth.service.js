@@ -32,20 +32,17 @@ const registerSecondStep = async (req, userBody) => {
   const { userId } = req.query;
   console.log("userId", userId);
   console.log("userBody", userBody);
-
   const user = await User.findOne({ _id: userId });
   console.log("User", user);
 
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
-
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: userBody },
-    { new: true } // returns updated document
+    { new: true }  
   );
-
   console.log("updatedBody", updatedUser);
   return updatedUser;
 };
@@ -59,7 +56,6 @@ const login = async (userBody) => {
   if (!password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
   }
-
   const isPasswordCorrect = await user.isPasswordMatch(password);
   if (!isPasswordCorrect) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
@@ -74,7 +70,7 @@ const getUserByPhoneNumber = async (req) => {
     _id: req.user._id
   })
   if (!userExist) {
-    throw new Error('User does not exist')
+    throw new Error('User does not exist');
   }
   const { phoneNumber } = req.query;
   let user = await User.findOne({ phoneNumber: phoneNumber });
@@ -166,8 +162,6 @@ const resetPassword = async (resetPasswordToken, userBody) => {
   }
 };
 
-
-
 const verifyEmail = async (verifyEmailToken) => {
   try {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
@@ -193,17 +187,13 @@ const changePassword = async (req) => {
     if (!user) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
     }
-
     if (userRole.role !== 'admin' && !(await user.isPasswordMatch(currentPassword))) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.CURRENT_PASSWORD_NOT_MATCH);
     }
-
     if (newPassword !== confirmPassword) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.PASSWORD_NOT_MATCH);
     }
-
     const updatedUser = await updateUserById(userId, userType, { password: newPassword });
-
     return updatedUser;
   } catch (err) {
     throw new ApiError(httpStatus.BAD_REQUEST, err.message);
@@ -219,9 +209,9 @@ const checkUserById = async (userId, role) => {
     default:
       throw new Error("Invalid user type");
   }
-
   return userData;
 };
+
 const updateUserById = async (userId, role, password) => {
   let userData;
   switch (role) {

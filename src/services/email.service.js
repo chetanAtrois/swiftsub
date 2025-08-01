@@ -42,8 +42,8 @@ const sendResetPasswordEmail = async (to, userID) => {
 
 const sendVerificationEmail = async (email) => {
   const user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Please provide correct email');
+  if (user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'email already registered');
   }
   const subject = 'Email Verification';
   const code = Math.floor(1000 + Math.random() * 9000);
