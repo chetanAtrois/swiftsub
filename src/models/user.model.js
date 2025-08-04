@@ -70,7 +70,6 @@ const userSchema = mongoose.Schema(
     gender: {
       type: String,
       required: true,
-      enum: ['male', 'female', 'not to specify'],
       default: 'null',
     },
     userType: {

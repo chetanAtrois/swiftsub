@@ -24,7 +24,7 @@ const sendResetPasswordEmail = async (to, userID) => {
   
   const subject = 'Reset password';
   const token = jwt.sign({ userID: userID }, "thisisasamplesecret", { expiresIn: '1h' });
-  const code = Math.floor(1000 + Math.random() * 9000);
+  const otp = Math.floor(100000 + Math.random() * 900000); 
   await Otp.create({
     otp: code,
     email: to,
@@ -46,7 +46,7 @@ const sendVerificationEmail = async (email) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'email already registered');
   }
   const subject = 'Email Verification';
-  const code = Math.floor(1000 + Math.random() * 9000);
+  const otp = Math.floor(100000 + Math.random() * 900000); 
   await Otp.create({
     otp: code,
     email: email,
