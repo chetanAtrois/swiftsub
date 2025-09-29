@@ -6,21 +6,45 @@ const logger = require('./config/logger');
 let server;
 let port;
 
-const mongooseOptions = {
-  ...config.mongoose.options,
-  // Set write concern to majority to ensure writes are acknowledged by majority of nodes
-  writeConcern: { w: 'majority' },
-};
+// MongoDB connection cache
+let cached = global.mongoose;
 
-mongoose.connect(config.mongoose.url, mongooseOptions).then(() => {
-  logger.info('Connected to MongoDB');
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
-  port = config.port || 4000;
-  server = app.listen(port, () => logger.info(`Listening on port ${port}`));
-}).catch(error => {
-  logger.error('Error connecting to MongoDB:', error);
-  process.exit(1);
-});
+async function connectToDatabase() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const mongooseOptions = {
+      ...config.mongoose.options,
+      writeConcern: { w: 'majority' },
+      serverSelectionTimeoutMS: 10000, // optional to increase timeout
+    };
+    cached.promise = mongoose.connect(config.mongoose.url, mongooseOptions).then(mongoose => mongoose);
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+async function startServer() {
+  try {
+    await connectToDatabase();
+    logger.info('Connected to MongoDB');
+
+    port = config.port || 4000;
+    server = app.listen(port, () => logger.info(`Listening on port ${port}`));
+  } catch (error) {
+    logger.error('Error connecting to MongoDB:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 const exitHandler = () => {
   if (server) {
