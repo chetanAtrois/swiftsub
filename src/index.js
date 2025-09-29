@@ -66,5 +66,5 @@ process.on('SIGTERM', () => {
   if (server) {
     server.close(() => logger.info('Server closed after SIGTERM'));
   }
-});
+}) ;
 
