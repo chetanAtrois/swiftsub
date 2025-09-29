@@ -6,12 +6,33 @@ const logger = require('./config/logger');
 let server;
 const port = config.port || 4000;
 
-// Connect to MongoDB
-mongoose.connect(config.mongoose.url, config.mongoose.options)
+// Cache for serverless environment
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function dbConnect() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(config.mongoose.url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      // Use standard write concern
+      writeConcern: { w: 'majority', j: true }
+    }).then((mongoose) => mongoose);
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// Connect and start server
+dbConnect()
   .then(() => {
     logger.info('✅ Connected to MongoDB');
 
-    // Start server and assign to variable
     server = app.listen(port, () => {
       logger.info(`Server is listening on port ${port}`);
     });
@@ -33,7 +54,6 @@ const exitHandler = () => {
   }
 };
 
-// Unexpected errors
 const unexpectedErrorHandler = (error) => {
   logger.error('Unexpected error', error);
   exitHandler();
@@ -41,8 +61,6 @@ const unexpectedErrorHandler = (error) => {
 
 process.on('uncaughtException', unexpectedErrorHandler);
 process.on('unhandledRejection', unexpectedErrorHandler);
-
-// SIGTERM (used by platforms like Heroku or Vercel)
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received');
   if (server) {
