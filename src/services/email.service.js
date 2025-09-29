@@ -13,7 +13,7 @@ if (config.env !== 'test') {
     .verify()
     .then(() => logger.info('Connected to email server'))
     .catch(() => logger.warn('Unable to connect to email server. Make sure you have configured the SMTP options in .env'));
-}
+  }
 
 const sendEmail = async (to, subject, text) => {
   const msg = { from: config.email.from, to, subject, text };
@@ -39,7 +39,6 @@ const sendResetPasswordEmail = async (to, userID) => {
   await sendEmail(to, subject, text);
 };
 
-
 const sendVerificationEmail = async (email) => {
   const user = await User.findOne({ email });
   if (user) {
@@ -59,7 +58,6 @@ If you didn't create an account, please ignore this email.`;
 
   await sendEmail(email, subject, text);
 };
-
 
 const verifyOtp = async (otp, email) => {
   const isOtpValid = await Otp.findOne({

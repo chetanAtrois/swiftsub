@@ -65,20 +65,20 @@ const login = async (userBody) => {
   return user;
 };
 
-const getUserByPhoneNumber = async (req) => {
-  const userExist = await User.findOne({
-    _id: req.user._id
-  })
-  if (!userExist) {
-    throw new Error('User does not exist');
-  }
-  const { phoneNumber } = req.query;
-  let user = await User.findOne({ phoneNumber: phoneNumber });
-  if (!user) {
-    user = await subAdmin.findOne({ phoneNumber: phoneNumber })
-  }
-  return user;
-};
+// const getUserByPhoneNumber = async (req) => {
+//   const userExist = await User.findOne({
+//     _id: req.user._id
+//   })
+//   if (!userExist) {
+//     throw new Error('User does not exist');
+//   }
+//   const { phoneNumber } = req.query;
+//   let user = await User.findOne({ phoneNumber: phoneNumber });
+//   if (!user) {
+//     user = await subAdmin.findOne({ phoneNumber: phoneNumber })
+//   }
+//   return user;
+// };
 
 const getUsersById = async (req) => {
   const userExist = await User.findOne({ _id: req.user._id });
@@ -128,7 +128,7 @@ const refreshAuth = async (refreshToken) => {
     }
     await refreshTokenDoc.remove();
     return tokenService.generateAuthTokens(user);
-  } catch (error) {
+  } catch (error) { 
     throw new ApiError(httpStatus.UNAUTHORIZED, error.message);
   }
 };
@@ -224,6 +224,9 @@ const updateUserById = async (userId, role, password) => {
   return userData;
 };
 
+// const isIdVerified = async(req)=>{
+// }
+ 
 module.exports = {
   register,
   registerSecondStep,
@@ -233,7 +236,7 @@ module.exports = {
   resetPassword,
   verifyEmail,
   changePassword,
-  getUserByPhoneNumber,
+  // getUserByPhoneNumber,
   getUsersById
   
 };

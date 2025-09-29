@@ -6,8 +6,8 @@ const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-router.post('/register', validate(authValidation.register), authController.register);
-router.put('/registerSecondStep',authController.registerSecondStep);
+router.post('/register-admin', validate(authValidation.register), authController.register);
+// router.put('/registerSecondStep',authController.registerSecondStep);
 router.post('/login', validate(authValidation.login), authController.login);
 router.post('/sendVerificationEmail',authController.sendVerificationEmail);
 router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);

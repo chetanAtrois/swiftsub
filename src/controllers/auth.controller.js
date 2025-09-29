@@ -15,11 +15,11 @@ const register = catchAsync(async(req,res)=>{
   res.status(httpStatus.CREATED).send({success:true,user,token}) 
 });
 
-const registerSecondStep = catchAsync(async (req, res) => {
-  const user = await authService.registerSecondStep(req, req.body); // <-- pass req.body here
-  const token = await tokenService.generateAuthTokens(user, req.body.roleType);
-  res.status(httpStatus.CREATED).send({ success: true, user, token });
-});
+// const registerSecondStep = catchAsync(async (req, res) => {
+//   const user = await authService.registerSecondStep(req, req.body); // <-- pass req.body here
+//   const token = await tokenService.generateAuthTokens(user, req.body.roleType);
+//   res.status(httpStatus.CREATED).send({ success: true, user, token });
+// });
 
 const login = catchAsync(async (req, res) => {
   const user = await authService.login(req.body);
@@ -91,7 +91,7 @@ const changePassword = catchAsync(async (req, res) => {
 
 module.exports = {
   register,
-  registerSecondStep,
+  // registerSecondStep,
   login,
   logout,
   refreshTokens,

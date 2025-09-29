@@ -4,16 +4,16 @@ const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
 
-const userSchema = mongoose.Schema(
+const adminSchema = mongoose.Schema(
   {
     firstName: {
       type: String,
       trim: true,
-      required: true
+      required: true,
     },
     lastName: {
       type: String,
-      required: true
+      required: true,
     },
     email: {
       type: String,
@@ -32,8 +32,13 @@ const userSchema = mongoose.Schema(
     },
     userType: {
       type: String,
-      default: 'user',
-      enum: ['user'],
+      default: 'admin',
+      enum: ['admin'],
+    },
+    roleType: {
+      type: String,
+      default: 'admin',
+      enum: ['admin'],
     },
     fcmToken: {
       type: String,
@@ -44,29 +49,29 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-userSchema.plugin(toJSON);
-userSchema.plugin(paginate);
+adminSchema.plugin(toJSON);
+adminSchema.plugin(paginate);
 
-userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
+adminSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
   return !!user;
 };
 
-userSchema.statics.isPhoneNumberTaken = async function (phoneNumber, excludeUserId) {
-  const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
-  return !!user;
-};
+// adminSchema.statics.isPhoneNumberTaken = async function (phoneNumber, excludeUserId) {
+//   const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
+//   return !!user;
+// };
 
-userSchema.methods.isPasswordMatch = async function (password) {
+adminSchema.methods.isPasswordMatch = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-userSchema.pre('save', async function (next) {
+adminSchema.pre('save', async function (next) {
   if (this.isModified('password') && this.password) {
     this.password = await bcrypt.hash(this.password, 8);
   }
   next();
 });
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+const admin = mongoose.model('admin', adminSchema);
+module.exports = admin;
