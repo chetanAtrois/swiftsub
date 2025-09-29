@@ -4,15 +4,24 @@ const config = require('./config/config');
 const logger = require('./config/logger');
 
 let server;
+const port = config.port || 4000;
 
-let port;
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
-  logger.info('Connected to MongoDB');
+// Connect to MongoDB
+mongoose.connect(config.mongoose.url, config.mongoose.options)
+  .then(() => {
+    logger.info('✅ Connected to MongoDB');
 
-  port = config.port || 4000;
-  app.listen(port, () => console.log(`listening on port ${config.port}`));
-});
+    // Start server and assign to variable
+    server = app.listen(port, () => {
+      logger.info(`Server is listening on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    logger.error('MongoDB connection failed', err);
+    process.exit(1);
+  });
 
+// Graceful shutdown
 const exitHandler = () => {
   if (server) {
     server.close(() => {
@@ -24,17 +33,20 @@ const exitHandler = () => {
   }
 };
 
+// Unexpected errors
 const unexpectedErrorHandler = (error) => {
-  logger.error(error);
+  logger.error('Unexpected error', error);
   exitHandler();
 };
 
 process.on('uncaughtException', unexpectedErrorHandler);
 process.on('unhandledRejection', unexpectedErrorHandler);
 
+// SIGTERM (used by platforms like Heroku or Vercel)
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received');
   if (server) {
-    server.close();
+    server.close(() => logger.info('Server closed after SIGTERM'));
   }
 });
+
