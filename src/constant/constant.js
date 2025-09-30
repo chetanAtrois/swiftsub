@@ -17,6 +17,7 @@ const responseMessage = {
 };
 
 const userTypes = {
-  USER: 'user'
+  USER: 'user',
+  ADMIN: 'admin',
 };
 module.exports = { responseMessage, userTypes };

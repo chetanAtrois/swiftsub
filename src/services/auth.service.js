@@ -1,84 +1,106 @@
 const httpStatus = require('http-status');
-const tokenService = require('./token.service');
-const userService = require('./user.service');
+const tokenService = require('./token.service.js');
+const userService = require('./user.service.js');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
 const User = require('../models/user.model');
 const { responseMessage, userTypes } = require('../constant/constant');
 
+// ✅ role-based helpers
+const checkUserById = async (userId, role) => {
+  let userData;
+  switch (role) {
+    case userTypes.USER:
+    case userTypes.ADMIN:
+      userData = await userService.getUserById(userId);
+      break;
+    default:
+      throw new Error("Invalid user type");
+  }
+  return userData;
+};
+
+const updateUserById = async (userId, role, payload) => {
+  let userData;
+  switch (role) {
+    case userTypes.USER:
+    case userTypes.ADMIN:
+      userData = await userService.updateUserById(userId, payload);
+      break;
+    default:
+      throw new Error("Invalid user type");
+  }
+  return userData;
+};
+
+const checkUserByEmail = async (email, role) => {
+  let userData;
+  switch (role) {
+    case userTypes.USER:
+    case userTypes.ADMIN:
+      userData = await userService.getUserByEmail(email);
+      break;
+    default:
+      throw new Error("Invalid user type");
+  }
+  return userData;
+};
+
+// ----------------------------------------------------
+
 const register = async (userBody) => {
-  const { roleType, email, firstName, lastName, password, fcmToken, gender, dateOFBirth } = userBody;
-  console.log("userBody", userBody);
+  const { email, fcmToken } = userBody;
 
   const emailTakenInUser = await User.isEmailTaken(email);
   if (emailTakenInUser) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Email already registered as another user`);
   }
-  // const phoneTakenInUser = await User.isPhoneNumberTaken(phoneNumber);
-  // if (phoneTakenInUser) {
-  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
-  // }
+
   const userData = {
     ...userBody,
-    fcmToken
+    fcmToken,
   };
 
   const newUser = await User.create(userData);
   return newUser;
 };
 
-const registerSecondStep = async (req, userBody) => {
-  const { userId } = req.query;
-  console.log("userId", userId);
-  console.log("userBody", userBody);
-  const user = await User.findOne({ _id: userId });
-  console.log("User", user);
-
-  if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
-  }
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    { $set: userBody },
-    { new: true }  
-  );
-  console.log("updatedBody", updatedUser);
-  return updatedUser;
-};
+// const registerSecondStep = async (req, userBody) => {
+//   const { userId } = req.query;
+//   const user = await User.findOne({ _id: userId });
+//   if (!user) {
+//     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+//   }
+//   const updatedUser = await User.findByIdAndUpdate(
+//     userId,
+//     { $set: userBody },
+//     { new: true }
+//   );
+//   return updatedUser;
+// };
 
 const login = async (userBody) => {
-  const { email, password, fcmToken } = userBody;
-  let user = await User.findOne({ email });
+  const { email, password, fcmToken, roleType } = userBody;
+
+  let user = await checkUserByEmail(email, roleType);
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
+
   if (!password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
   }
+
   const isPasswordCorrect = await user.isPasswordMatch(password);
   if (!isPasswordCorrect) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
+
   user.fcmToken = fcmToken;
   await user.save();
   return user;
 };
-
-// const getUserByPhoneNumber = async (req) => {
-//   const userExist = await User.findOne({
-//     _id: req.user._id
-//   })
-//   if (!userExist) {
-//     throw new Error('User does not exist');
-//   }
-//   const { phoneNumber } = req.query;
-//   let user = await User.findOne({ phoneNumber: phoneNumber });
-//   if (!user) {
-//     user = await subAdmin.findOne({ phoneNumber: phoneNumber })
-//   }
-//   return user;
-// };
 
 const getUsersById = async (req) => {
   const userExist = await User.findOne({ _id: req.user._id });
@@ -90,6 +112,7 @@ const getUsersById = async (req) => {
     throw new Error('Please provide a valid array of user IDs in the body.');
   }
   const usersFromUser = await User.find({ _id: { $in: id } });
+  // ⚠️ subAdmin not defined in your code, left as-is
   const usersFromSubAdmin = await subAdmin.find({ _id: { $in: id } });
   const allUsers = [...usersFromUser, ...usersFromSubAdmin];
 
@@ -97,13 +120,14 @@ const getUsersById = async (req) => {
 };
 
 const logout = async (req) => {
-  const { refreshToken, email } = req.body;
-  const user = await User.findOne({ email: req.body.email });
+  const { refreshToken, email, roleType } = req.body;
+
+  const user = await checkUserByEmail(email, roleType);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+
   const userId = user._id;
-  console.log("husdf", userId)
   const refreshTokenDoc = await Token.findOne({
     token: refreshToken,
     type: tokenTypes.REFRESH,
@@ -115,7 +139,7 @@ const logout = async (req) => {
   await refreshTokenDoc.remove();
   await User.findOneAndUpdate({ _id: userId }, { $set: { fcmToken: null } });
   return {
-    message: 'User logged out successfully'
+    message: 'User logged out successfully',
   };
 };
 
@@ -128,7 +152,7 @@ const refreshAuth = async (refreshToken) => {
     }
     await refreshTokenDoc.remove();
     return tokenService.generateAuthTokens(user);
-  } catch (error) { 
+  } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, error.message);
   }
 };
@@ -143,20 +167,18 @@ const resetPassword = async (resetPasswordToken, userBody) => {
       resetPasswordToken,
       tokenTypes.RESET_PASSWORD
     );
-    console.log('Token Payload:', resetPasswordTokenDoc);
     const userType = resetPasswordTokenDoc.userType;
+
     const user = await checkUserById(resetPasswordTokenDoc.user, userType);
     if (!user) {
       throw new Error(responseMessage.USER_NOT_FOUND);
     }
+
     await updateUserById(user.id, userType, { password });
     await Token.deleteMany({
       user: user.id,
       type: tokenTypes.RESET_PASSWORD,
     });
-
-    console.log('Password reset successfully');
-
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, error.message);
   }
@@ -164,7 +186,10 @@ const resetPassword = async (resetPasswordToken, userBody) => {
 
 const verifyEmail = async (verifyEmailToken) => {
   try {
-    const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
+    const verifyEmailTokenDoc = await tokenService.verifyToken(
+      verifyEmailToken,
+      tokenTypes.VERIFY_EMAIL
+    );
     const user = await userService.getUserById(verifyEmailTokenDoc.user);
     if (!user) {
       throw new Error();
@@ -182,7 +207,7 @@ const changePassword = async (req) => {
     const userId = req.params.id;
     const userRole = req.user;
     const userType = userRole.userType;
-    console.log('userRole', userRole);
+
     const user = await checkUserById(userId, userType);
     if (!user) {
       throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.USER_NOT_FOUND);
@@ -200,43 +225,16 @@ const changePassword = async (req) => {
   }
 };
 
-const checkUserById = async (userId, role) => {
-  let userData;
-  switch (role) {
-    case userTypes.USER:
-      userData = await userService.getUserById(userId);
-      break;
-    default:
-      throw new Error("Invalid user type");
-  }
-  return userData;
-};
+// ----------------------------------------------------
 
-const updateUserById = async (userId, role, password) => {
-  let userData;
-  switch (role) {
-    case userTypes.USER:
-      userData = await userService.updateUserById(userId, password);
-      break;
-    default:
-      throw new Error("Invalid user type");
-  }
-  return userData;
-};
-
-// const isIdVerified = async(req)=>{
-// }
- 
 module.exports = {
   register,
-  registerSecondStep,
+  // registerSecondStep,
   login,
   logout,
   refreshAuth,
   resetPassword,
   verifyEmail,
   changePassword,
-  // getUserByPhoneNumber,
-  getUsersById
-  
+  getUsersById,
 };
