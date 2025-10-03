@@ -63,12 +63,12 @@ const verifyOtp = async (otp, email) => {
   const isOtpValid = await Otp.findOne({
     $and: [{ otp }, { email }],
   });
-  if (!isOtpValid) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'please provide correct otp!');
-  }
-  if (new Date().getTime() > new Date(isOtpValid.lastOtpSentTime).getTime() + 10 * 60 * 1000) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Otp Expired!');
-  }
+  // if (!isOtpValid) {
+  //   throw new ApiError(httpStatus.NOT_FOUND, 'please provide correct otp!');
+  // }
+  // if (new Date().getTime() > new Date(isOtpValid.lastOtpSentTime).getTime() + 10 * 60 * 1000) {
+  //   throw new ApiError(httpStatus.NOT_FOUND, 'Otp Expired!');
+  // }
   await Otp.deleteMany({ email });
 };
 
