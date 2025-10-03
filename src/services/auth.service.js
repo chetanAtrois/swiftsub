@@ -283,6 +283,6 @@ module.exports = {
   changePassword,
   // getUserByPhoneNumber,
   // getUsersById,
-  isIdVerified,
-  createMeeting,
+  // isIdVerified,
+  // createMeeting,
 };
