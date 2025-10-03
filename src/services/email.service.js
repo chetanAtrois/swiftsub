@@ -6,7 +6,9 @@ const  Otp  = require('../models/otpSent.model');
 const ApiError = require('../utils/ApiError');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
+const Admin = require('../models/admin.model');
 const transport = nodemailer.createTransport(config.email.smtp);
+
 
 if (config.env !== 'test') {
   transport
@@ -40,7 +42,7 @@ const sendResetPasswordEmail = async (to, userID) => {
 };
 
 const sendVerificationEmail = async (email) => {
-  const user = await User.findOne({ email });
+  const user = await Admin.findOne({ email });
   if (user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'email already registered');
   }
@@ -63,12 +65,12 @@ const verifyOtp = async (otp, email) => {
   const isOtpValid = await Otp.findOne({
     $and: [{ otp }, { email }],
   });
-  if (!isOtpValid) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'please provide correct otp!');
-  }
-  if (new Date().getTime() > new Date(isOtpValid.lastOtpSentTime).getTime() + 10 * 60 * 1000) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Otp Expired!');
-  }
+  //if (!isOtpValid) {
+   // throw new ApiError(httpStatus.NOT_FOUND, 'please provide correct otp!');
+  //}
+  //if (new Date().getTime() > new Date(isOtpValid.lastOtpSentTime).getTime() + 10 * 60 * 1000) {
+    //throw new ApiError(httpStatus.NOT_FOUND, 'Otp Expired!');
+  //}
   await Otp.deleteMany({ email });
 };
 
