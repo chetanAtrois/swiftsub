@@ -260,18 +260,18 @@ const isIdVerified = async (req) => {
   return verified;
 };
 
-const createMeeting = async (req) => {
-  const { userId, want, time, connectionUserId, where, date } = req.body;
-  const Meeting = await meeting.create({
-    userId: req.body.userId,
-    want: req.body.want,
-    time: req.body.time,
-    connectionUserId: req.body.connectionUserId,
-    where: req.body.where,
-    date: req.body.date,
-  });
-  return Meeting;
-};
+// const createMeeting = async (req) => {
+//   const { userId, want, time, connectionUserId, where, date } = req.body;
+//   const Meeting = await meeting.create({
+//     userId: req.body.userId,
+//     want: req.body.want,
+//     time: req.body.time,
+//     connectionUserId: req.body.connectionUserId,
+//     where: req.body.where,
+//     date: req.body.date,
+//   });
+//   return Meeting;
+// };
 
 module.exports = {
   register,

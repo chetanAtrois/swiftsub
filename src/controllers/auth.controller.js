@@ -7,6 +7,7 @@ const userService = require('../services/user.service');
 const { responseMessage, userTypes } = require('../constant/constant');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/user.model');
+const Admin = require('../models/admin.model');
 
 const register = catchAsync(async(req,res)=>{
   const {roleType} = req.body;
@@ -44,7 +45,7 @@ const refreshTokens = catchAsync(async (req, res) => {
 
 const forgotPassword = catchAsync(async (req, res) => {
   const { email } = req.body;
-  let user = await User.findOne({ email });
+  let user = await Admin.findOne({ email });
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body);
   await emailService.sendResetPasswordEmail(email, resetPasswordToken);
   return res.status(httpStatus.OK).send({
