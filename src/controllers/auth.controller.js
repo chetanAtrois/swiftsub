@@ -46,6 +46,9 @@ const refreshTokens = catchAsync(async (req, res) => {
 const forgotPassword = catchAsync(async (req, res) => {
   const { email } = req.body;
   let user = await Admin.findOne({ email });
+  console.log('useri sher',user);
+
+  
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body);
   await emailService.sendResetPasswordEmail(email, resetPasswordToken);
   return res.status(httpStatus.OK).send({
