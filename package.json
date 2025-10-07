@@ -1,7 +1,7 @@
 {
-  "name": "MeetEaze-app-backend",
+  "name": "Swiftsub_Backend",
   "version": "1.7.0",
-  "description": "create rest api's for MeetEaze-app",
+  "description": "create rest api's for Backend-app",
   "bin": "bin/createNodejsApp.js",
   "main": "src/index.js",
   "license": "MIT",
