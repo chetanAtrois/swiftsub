@@ -53,7 +53,7 @@ const deleteUserByQuery = catchAsync(async (req, res) => {
 
 
 const getProfileByQuery = catchAsync(async (req, res) => {
-  const userId = req.query.id;
+  const {userId} = req.query;
   if (!userId) return res.status(httpStatus.BAD_REQUEST).send({ success: false, message: 'User ID is required' });
 
   const user = await profileService.getProfile(userId, 'admin');
