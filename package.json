@@ -1,5 +1,5 @@
 {
-  "name": "Swiftsub_Backend",
+  "name": "Swiftsub Backend",
   "version": "1.7.0",
   "description": "create rest api's for Swiftsub-app",
   "bin": "bin/createNodejsApp.js",

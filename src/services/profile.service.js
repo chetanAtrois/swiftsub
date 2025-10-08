@@ -35,6 +35,8 @@ const updateProfile = async (userId, userType, updateBody) => {
   return updatedUser;
 };
 
+
+
 module.exports = {
   getProfile,
   updateProfile,

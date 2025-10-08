@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/user.model');
 const profileService = require('../services/profile.service');
+const userService = require('../services/user.service');
 
 
 const getUsersList = catchAsync(async (req, res) => {
@@ -90,6 +91,20 @@ const updateProfileByQuery = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ success: true, message: 'Profile updated successfully', user: filteredUser });
 });
 
+
+const searchUser = catchAsync(async (req, res) => {
+  const { query } = req.query;
+  const user = await userService.searchUsers(query);
+  
+  if (!user) {
+    return res.status(404).send({ message: 'User not found' });
+  }
+
+  res.status(200).send({ message: 'User found', data: user });
+});
+
+
+
 module.exports = {
   getUsersList,
   getUserProfileByQuery,
@@ -97,5 +112,6 @@ module.exports = {
   deleteUserByQuery,
   getProfileByQuery,
   updateProfileByQuery,
+  searchUser,
 };
 

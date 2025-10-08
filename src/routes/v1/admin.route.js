@@ -16,6 +16,8 @@ router.delete('/users', adminController.deleteUserByQuery);
 
 
 router.get('/profile', adminController.getProfileByQuery);
-router.put('/profile', adminController.updateProfileByQuery);
+
+router.get('/search',adminController.searchUser);
+
 
 module.exports = router;
