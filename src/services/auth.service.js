@@ -122,12 +122,20 @@ const logout = async (req) => {
 const resetPassword = async (resetPasswordToken, userBody) => {
   try {
     const { password, confirmNewPassword } = userBody;
+ 
     if (password !== confirmNewPassword) {
       throw new Error('Passwords do not match');
     }
-    const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
+ 
+    const resetPasswordTokenDoc = await tokenService.verifyToken(
+      resetPasswordToken,
+      tokenTypes.RESET_PASSWORD
+    );
     console.log('Token Payload:', resetPasswordTokenDoc);
+ 
+ 
     const userType = resetPasswordTokenDoc.userType;
+ 
     const user = await checkUserById(resetPasswordTokenDoc.user, userType);
     if (!user) {
       throw new Error(responseMessage.USER_NOT_FOUND);
@@ -137,8 +145,9 @@ const resetPassword = async (resetPasswordToken, userBody) => {
       user: user.id,
       type: tokenTypes.RESET_PASSWORD,
     });
-
+ 
     console.log('Password reset successfully');
+ 
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, error.message);
   }
@@ -189,7 +198,7 @@ const checkUserById = async (userId, role) => {
       userData = await userService.getUserById(userId);
       break;
     case userTypes.ADMIN:
-      userData = await admin.findById(userId);
+      userData = await userService.getAdminById(userId);
       break;
     default:
       throw new Error('Invalid user type');
@@ -204,7 +213,7 @@ const updateUserById = async (userId, role, password) => {
       userData = await userService.updateUserById(userId, password);
       break;
     case userTypes.ADMIN:
-      userData = await admin.findByIdAndUpdate(userId, password, { new: true });
+      userData = await userService.updateAdminById(userId, password);
       break;
     default:
       throw new Error('Invalid user type');
@@ -212,27 +221,7 @@ const updateUserById = async (userId, role, password) => {
   return userData;
 };
 
-// const isIdVerified = async (req) => {
-//   const { userId } = req.query;
 
-//   if (!userId) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, 'UserId is required');
-//   }
-
-//   const user = await User.findById(userId);
-
-//   if (!user) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-//   }
-
-//   // if (user.isProfileVerified === req.body.isProfileVerified) {
-//   //   throw new ApiError(httpStatus.BAD_REQUEST, 'User is already verified');
-//   // }
-
-//   const verified = await User.findByIdAndUpdate({ isProfileVerified: req.body.isProfileVerified }, { new: true });
-
-//   return verified;
-// };
 const isIdVerified = async (req) => {
   const { userId } = req.query;
 
@@ -260,29 +249,13 @@ const isIdVerified = async (req) => {
   return verified;
 };
 
-// const createMeeting = async (req) => {
-//   const { userId, want, time, connectionUserId, where, date } = req.body;
-//   const Meeting = await meeting.create({
-//     userId: req.body.userId,
-//     want: req.body.want,
-//     time: req.body.time,
-//     connectionUserId: req.body.connectionUserId,
-//     where: req.body.where,
-//     date: req.body.date,
-//   });
-//   return Meeting;
-// };
 
 module.exports = {
   register,
   login,
   logout,
-  // refreshAuth,
   resetPassword,
   verifyEmail,
   changePassword,
-  // getUserByPhoneNumber,
-  // getUsersById,
-  // isIdVerified,
-  // createMeeting,
+ 
 };

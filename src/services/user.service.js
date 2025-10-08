@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const  User  = require('../models/admin.model');
 const ApiError = require('../utils/ApiError');
 const { responseMessage } = require('../constant/constant');
+const Admin = require("../models/admin.model");
 
  
 const searchUsers = async (query) => {
@@ -30,6 +31,10 @@ const getUserById = async (id) => {
   return User.findById(id);
 };
 
+const getAdminById = async (id) => {
+  return Admin.findById(id);
+};
+
 const getUserByEmail = async (email) => {
   return User.findOne({ email });
 };
@@ -40,6 +45,19 @@ const updateUserById = async (userId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_FOUND);
   }
   if (user.email && (await User.isEmailTaken(user.email, userId))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
+  }
+  Object.assign(user, updateBody);
+  await user.save();
+  return user;
+};
+
+const updateAdminById = async (userId, updateBody) => {
+  const user = await getAdminById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, responseMessage.USER_NOT_FOUND);
+  }
+  if (user.email && (await Admin.isEmailTaken(user.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, responseMessage.EMAIL_ALREADY_TAKEN);
   }
   Object.assign(user, updateBody);
@@ -69,5 +87,7 @@ module.exports = {
   deleteUserById,
   getUserByPhoneNumber,
   updateUserById,
-  searchUsers
+  searchUsers,
+  getAdminById,
+  updateAdminById
 };

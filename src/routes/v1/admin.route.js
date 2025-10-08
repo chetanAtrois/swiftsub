@@ -3,21 +3,12 @@ const adminController = require('../../controllers/profile.controller');
 
 const router = express.Router();
 
-router.get('/users', adminController.getUsersList);
-
-
-router.get('/users/profile', adminController.getUserProfileByQuery);
-
-
-router.put('/users', adminController.updateUserByQuery);
-
-
-router.delete('/users', adminController.deleteUserByQuery);
-
-
-router.get('/profile', adminController.getProfileByQuery);
-
-router.get('/search',adminController.searchUser);
+router.get('/getUserList', adminController.getUsersList);
+router.get('/getUserProfile', adminController.getUserProfileByQuery);
+router.put('/updateUserProfile', adminController.updateUserByQuery);
+router.delete('/deleteProfile', adminController.deleteUserByQuery);
+router.get('/adminProfile', adminController.getProfileByQuery);
+router.get('/searchUser',adminController.searchUser);
 
 
 module.exports = router;

@@ -3,8 +3,9 @@ const moment = require('moment');
 const httpStatus = require('http-status');
 const config = require('../config/config');
 const userService = require('./user.service');
-const  Token  = require('../models/token.model');
+const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
+const Admin = require('../models/admin.model');
 const { tokenTypes } = require('../config/tokens');
 const { userTypes } = require('../constant/constant');
 const generateToken = (userId, userType, expires, type, secret = config.jwt.secret) => {
@@ -32,8 +33,8 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 
 const verifyToken = async (token, type) => {
   try {
-    const payload = jwt.verify(token, config.jwt.secret);  
-    console.log('Decoded Token:', payload);  
+    const payload = jwt.verify(token, config.jwt.secret);
+    console.log('Decoded Token:', payload);
 
     const tokenDoc = await Token.findOne({
       token,
@@ -95,15 +96,17 @@ const generateVerifyEmailToken = async (user) => {
 
 const checkUserByEmail = async (email) => {
   let userData = await userService.getUserByEmail(email);
-    if (!userData) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        'No user found with this email'
-      );
-    }
-  return userData; 
+  if (!userData) {
+    userData = await getAdminByEmail (email);
+  }
+  if (!userData) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this email');
+  }
+  return userData;
 };
-
+const getAdminByEmail = async (email) => {
+  return Admin.findOne({ email });
+};
 
 module.exports = {
   generateToken,
