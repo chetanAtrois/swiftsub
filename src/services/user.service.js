@@ -16,6 +16,7 @@ const searchUsers = async (query) => {
   }
 
   const users = await User.findOne(searchQuery).select('-password');
+  console.log("sfsdf:",users);
   return users;
 };
 
