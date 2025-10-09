@@ -1,6 +1,12 @@
 const allRoles = {
   user: [],
   admin: [
+    'getUserList', 
+    'getUserProfile', 
+    'updateUserProfile', 
+    'deleteProfile', 
+    'adminProfile',
+    'searchUser'
   ],
 };
 

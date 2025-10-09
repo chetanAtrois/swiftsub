@@ -1,7 +1,7 @@
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const config = require('./config');
 const { tokenTypes } = require('./tokens');
-const { Admin } = require('../models/admin.model');
+const Admin = require('../models/admin.model');
 
 const jwtOptions = {
   secretOrKey: config.jwt.secret,

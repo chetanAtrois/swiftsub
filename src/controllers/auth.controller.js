@@ -25,10 +25,7 @@ const register = catchAsync(async(req,res)=>{
 const login = catchAsync(async (req, res) => {
   const user = await authService.login(req.body);
   console.log('User returned from login:', user);
-  const tokens = await tokenService.generateAuthTokens(
-    user,
-    user.role || 'user' 
-  );
+   const tokens = await tokenService.generateAuthTokens(user,req.body.roleType);
   console.log('User returned from login:', user);
   res.status(httpStatus.OK).send({ success: true, user, tokens });
 });
