@@ -8,8 +8,6 @@ const register = {
     lastName: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
-    roleType: Joi.string().required().valid('admin'),
-    userType: Joi.string().required(),
     fcmToken: Joi.string().optional(),
   }),
 };
@@ -17,7 +15,6 @@ const register = {
 const login = {
   body: Joi.object().keys({
     email: Joi.string().email().required(),
-    roleType: Joi.string().required().valid('admin'),
     password: Joi.string().required(),
     fcmToken: Joi.string().optional(),
   }),
