@@ -15,8 +15,9 @@ const register = async (userBody) => {
   const { roleType, email, firstName, lastName, password, fcmToken } = userBody;
   console.log('userBody', userBody);
 
-  const emailTakenInUser = await admin.isEmailTaken(email);
-  if (emailTakenInUser) {
+  const emailTakenInAdmin = await admin.isEmailTaken(email);
+  const emailTakenInUser = await User.isEmailTaken(email);
+  if (emailTakenInUser || emailTakenInAdmin) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Email already registered as another user`);
   }
   // const phoneTakenInUser = await admin.isPhoneNumberTaken(phoneNumber);
@@ -27,8 +28,15 @@ const register = async (userBody) => {
     ...userBody,
     fcmToken,
   };
+  let user;
 
-  const newUser = await admin.create(userData);
+  if (roleType == 'admin'){
+    user = await admin.create(userData);
+  } else if (roleType === 'user'){
+    newUser = await User.create(userData);
+  }else {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid roleType');
+  }
   return newUser;
 };
 

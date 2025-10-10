@@ -8,7 +8,7 @@ const register = {
     lastName: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
-    roleType: Joi.string().required().valid('admin'),
+    roleType: Joi.string().required(),
     userType: Joi.string().required(),
     fcmToken: Joi.string().optional(),
   }),
