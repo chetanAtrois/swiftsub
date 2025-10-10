@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const  User  = require('../models/admin.model');
+const  User  = require('../models/user.model');
 const ApiError = require('../utils/ApiError');
 const { responseMessage } = require('../constant/constant');
 const Admin = require("../models/admin.model");
