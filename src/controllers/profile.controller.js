@@ -13,7 +13,7 @@ const fetchUserList = catchAsync(async (req, res) => {
 
 
 const getUserProfileByQuery = catchAsync(async (req, res) => {
-  const userId = req.query.id;
+  const userId = req.query.userId;
   if (!userId) {
     return res.status(httpStatus.BAD_REQUEST).send({ success: false, message: 'User ID is required' });
   }
