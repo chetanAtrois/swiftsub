@@ -6,13 +6,9 @@ const userService = require('../services/user.service');
 const adminService = require('../services/admin.service');
 
 
-const getUsersList = catchAsync(async (req, res) => {
-  const users = await User.find().select('firstName lastName email _id'); 
-  res.status(httpStatus.OK).send({
-    success: true,
-    message: 'Users list fetched successfully',
-    users,
-  });
+const fetchUserList = catchAsync(async (req, res) => {
+  const UserList = await adminService.fetchUserList(req);
+  res.status(httpStatus.OK).send({ success: true, UserList });
 });
 
 
@@ -97,7 +93,7 @@ const searchUser = catchAsync(async (req, res) => {
 
 
 module.exports = {
-  getUsersList,
+  fetchUserList,
   getUserProfileByQuery,
   updateUserByQuery,
   deleteUserByQuery,

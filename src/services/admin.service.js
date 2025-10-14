@@ -39,7 +39,19 @@ const updateUserByQuery = async (requestBody) => {
   return { updatedUser };
 };
 
-
+const fetchUserList = async (req) => {
+  const { page, limit, sortBy } = req.query;
+  const filter = { companyName: req.user.companyName };
+  const options = {
+    page,
+    limit,
+    sortBy,
+    select: 'fullName email phoneNumber image assignedAreaId',
+  };
+  const data = await User.paginate(filter, options);
+  return data;
+};
 module.exports={
-    updateUserByQuery
+    updateUserByQuery,
+    fetchUserList
 }

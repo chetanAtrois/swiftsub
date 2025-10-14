@@ -5,7 +5,7 @@ const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/getUserList', auth ('getUserList'), adminController.getUsersList);
+router.get('/getUserList', auth ('getUserList'), adminController.fetchUserList);
 router.get('/getUserProfile', auth('getUserProfile'), adminController.getUserProfileByQuery);
 router.put('/updateUserProfile', auth('updateUserProfile') ,adminController.updateUserByQuery);
 router.delete('/deleteProfile', auth ('deleteProfile') ,adminController.deleteUserByQuery);
