@@ -1,6 +1,7 @@
 const express = require('express');
 const adminController = require('../../controllers/profile.controller');
 const auth = require('../../middlewares/auth');
+const upload = require('../../config/upload')
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router.put('/updateUserProfile', auth('updateUserProfile') ,adminController.upda
 router.delete('/deleteProfile', auth ('deleteProfile') ,adminController.deleteUserByQuery);
 router.get('/adminProfile', auth ('adminProfile') ,adminController.getProfileByQuery);
 router.get('/searchUser', auth ('searchUser'), adminController.searchUser);
+router.post('/uploadProfilePicture',upload.single('ProfilePic'),adminController.uploader)
 
 
 module.exports = router;
