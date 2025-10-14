@@ -33,11 +33,11 @@ const register = async (userBody) => {
   if (roleType == 'admin'){
     user = await admin.create(userData);
   } else if (roleType === 'user'){
-    newUser = await User.create(userData);
+    user = await User.create(userData);
   }else {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid roleType');
   }
-  return newUser;
+  return user;
 };
 
 const login = async (userBody) => {
