@@ -89,6 +89,15 @@ const searchUser = catchAsync(async (req, res) => {
 
   res.status(200).send({ message: 'User found', data: user });
 });
+const UploadProfilePicture = catchAsync(async (req, res) => {
+  const fileData = await adminService.UploadProfilePicture(req);
+
+  res.status(200).json({
+    success: true,
+    message: 'Profile picture uploaded successfully!',
+    file: fileData,
+  });
+});
 
 
 
@@ -100,5 +109,6 @@ module.exports = {
   getProfileByQuery,
   updateProfileByQuery,
   searchUser,
+  UploadProfilePicture
 };
 
