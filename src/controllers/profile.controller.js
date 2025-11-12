@@ -54,7 +54,7 @@ const getProfileByQuery = catchAsync(async (req, res) => {
 
   const user = await profileService.getProfile(userId, 'admin');
   const filteredUser = {
-    firstName: user.firstName,
+    fullname: user.firstName,
     lastName: user.lastName,
     email: user.email,
     id: user._id || user.id,
